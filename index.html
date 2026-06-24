@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fishing Fortune Reels</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- SVG filter: vertical motion blur used on spinning reels -->
+<svg style="display:none;position:absolute" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="vertBlur" x="0%" y="-30%" width="100%" height="160%">
+      <feGaussianBlur stdDeviation="0 6"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- ░░░ OCEAN BACKGROUND ░░░ -->
+<div id="ocean-bg"></div>
+
+<!-- ░░░ AMBIENT BUBBLES ░░░ -->
+<div id="bubble-layer" aria-hidden="true">
+  <span style="width:18px;height:18px;left:7%;bottom:-20px;animation-duration:14s;animation-delay:0s"></span>
+  <span style="width:10px;height:10px;left:18%;bottom:-20px;animation-duration:11s;animation-delay:2s"></span>
+  <span style="width:26px;height:26px;left:32%;bottom:-20px;animation-duration:18s;animation-delay:5s"></span>
+  <span style="width:14px;height:14px;left:48%;bottom:-20px;animation-duration:13s;animation-delay:1s"></span>
+  <span style="width:20px;height:20px;left:62%;bottom:-20px;animation-duration:16s;animation-delay:7s"></span>
+  <span style="width:10px;height:10px;left:75%;bottom:-20px;animation-duration:10s;animation-delay:3s"></span>
+  <span style="width:24px;height:24px;left:88%;bottom:-20px;animation-duration:20s;animation-delay:9s"></span>
+  <span style="width:16px;height:16px;left:25%;bottom:-20px;animation-duration:15s;animation-delay:4s"></span>
+  <span style="width:12px;height:12px;left:55%;bottom:-20px;animation-duration:12s;animation-delay:6s"></span>
+  <span style="width:22px;height:22px;left:82%;bottom:-20px;animation-duration:17s;animation-delay:11s"></span>
+  <span style="width:14px;height:14px;left:41%;bottom:-20px;animation-duration:19s;animation-delay:8s"></span>
+  <span style="width:18px;height:18px;left:68%;bottom:-20px;animation-duration:13s;animation-delay:13s"></span>
+</div>
+
+<!-- ░░░ SPEED TOGGLE (fixed top-right, left of MODE) ░░░ -->
+<button id="speed-toggle-btn" title="Change spin speed" aria-label="Change spin speed">⚡ ×1</button>
+
+<!-- ░░░ FRAME TOGGLE (fixed top-right, desktop only) ░░░ -->
+<button id="frame-toggle-btn" title="Toggle frame style" aria-label="Toggle frame style">MODE</button>
+
+<!-- ░░░ MOBILE MENU BUTTON (fixed top-right, mobile only) ░░░ -->
+<button id="mobile-menu-btn" aria-label="Open game menu">☰</button>
+
+<!-- ░░░ PROFILE PIC WIDGET (fixed top-left, floats over game) ░░░ -->
+<div id="profile-widget">
+  <button id="profile-btn" aria-label="Choose profile picture">
+    <img id="profile-img" src="assets/profile_1.png" alt="Profile" draggable="false">
+  </button>
+  <div id="profile-picker" aria-label="Choose avatar" role="dialog">
+    <div id="picker-title">Choose Avatar</div>
+    <div id="picker-grid">
+      <button class="picker-opt" data-src="assets/profile_1.png" aria-label="Avatar 1"><img src="assets/profile_1.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_2.png" aria-label="Avatar 2"><img src="assets/profile_2.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_3.png" aria-label="Avatar 3"><img src="assets/profile_3.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_4.png" aria-label="Avatar 4"><img src="assets/profile_4.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_5.png" aria-label="Avatar 4"><img src="assets/profile_5.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_6.png" aria-label="Avatar 5"><img src="assets/profile_6.png" draggable="false"></button>
+    </div>
+  </div>
+</div>
+
+<!-- ░░░ MAIN APP ░░░ -->
+<div id="app">
+
+  <!-- ── JACKPOT TICKERS ── -->
+  <div id="jackpot-bar">
+
+    <div class="jp-panel grand">
+      <span class="jp-label">GRAND</span>
+      <span class="jp-value" id="jp-grand">5,900,000</span>
+    </div>
+    <div class="jp-panel major">
+      <span class="jp-label">MAJOR</span>
+      <span class="jp-value" id="jp-major">1,000,000</span>
+    </div>
+    <div class="jp-panel minor">
+      <span class="jp-label">MINOR</span>
+      <span class="jp-value" id="jp-minor">280,000</span>
+    </div>
+    <div class="jp-panel mini">
+      <span class="jp-label">MINI</span>
+      <span class="jp-value" id="jp-mini">50,000</span>
+    </div>
+  </div>
+
+  <!-- ── GAME TITLE ── -->
+  <div id="game-title">
+    <span class="title-fish">🎣</span>
+    <div id="title-words">
+      <span class="title-line1">FISHING FORTUNE</span>
+      <span class="title-line2">REELS</span>
+    </div>
+    <span class="title-fish">🐠</span>
+  </div>
+
+  <!-- ── GAME BOARD (reel frame, particle parent) ── -->
+  <main id="game-board">
+    <!-- Four corner gems -->
+    <div id="board-corners">
+      <span class="corner tl"></span>
+      <span class="corner tr"></span>
+      <span class="corner bl"></span>
+      <span class="corner br"></span>
+    </div>
+
+    <!-- 5 × 3 reel grid — built by game.js -->
+    <div id="reel-grid"></div>
+
+    <!-- Decorative reel frame overlay — sits above the reels, transparent center -->
+    <!-- Fades in automatically once reel_frame.png is present in assets/ -->
+    <img id="reel-frame-img" src="assets/reel_frame.png" alt="" aria-hidden="true" draggable="false">
+  </main>
+
+  <!-- ── STATUS BAR ── -->
+  <div id="status-bar">
+    <p id="status-text">Welcome to Fishing Fortune Reels · Press SPIN to cast! 🎣</p>
+  </div>
+
+  <!-- ── FREE SPINS INDICATOR (shown when active) ── -->
+  <!-- free_spins_banner.png is used as background-image via CSS -->
+  <div id="free-spins-row" style="display:none">
+    <span class="fs-label">🎁 FREE SPINS</span>
+    <span id="free-spins-value" class="fs-count">0</span>
+    <span class="fs-label">remaining</span>
+  </div>
+
+  <!-- Legacy hidden element — game.js syncs this via updateBetDisplay() -->
+  <span id="bet-value" style="display:none">20000</span>
+
+  <!-- ── BOTTOM CONTROL BAR ── -->
+  <div id="bottom-bar">
+
+    <!-- Balance -->
+    <div class="bar-cell" id="balance-cell">
+      <div class="bc-label">BALANCE</div>
+      <div class="bc-value gold" id="balance-value">15,000,000</div>
+    </div>
+
+    <!-- Bet controls -->
+    <div class="bar-cell" id="bet-cell">
+      <div class="bc-label">BET</div>
+      <div class="bet-row">
+        <button id="bet-minus" class="bet-arrow" aria-label="Decrease bet">−</button>
+        <span id="bet-value-ctrl" class="bc-value gold">20,000</span>
+        <button id="bet-plus" class="bet-arrow" aria-label="Increase bet">+</button>
+      </div>
+    </div>
+
+    <!-- Max bet -->
+    <button id="max-bet-btn" class="max-btn" aria-label="Max bet">MAX</button>
+
+    <!-- Win display (accumulated session total) -->
+    <div class="bar-cell center-cell" id="win-cell">
+      <div class="bc-label">TOTAL WIN</div>
+      <div class="bc-value teal" id="win-value">0</div>
+    </div>
+
+    <!-- Paytable -->
+    <button id="paytable-btn" class="icon-btn" aria-label="Paytable"><i>i</i></button>
+
+    <!-- Row break (mobile only — forces bet/spin onto second row) -->
+    <span class="bb-break" aria-hidden="true"></span>
+
+    <!-- SPIN -->
+    <button id="spin-btn">⚡ SPIN</button>
+
+  </div>
+
+  <!-- ── PAYLINE HINT ── -->
+  <div id="payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; Spacebar = Spin</div>
+
+</div><!-- /#app -->
+
+<!-- ░░░ WIN CELEBRATION OVERLAY ░░░ -->
+<div id="win-overlay" role="dialog" aria-modal="true" aria-label="Win Celebration">
+  <!-- Particle layer -->
+  <div id="win-particles"></div>
+  <!-- Central panel -->
+  <div id="win-overlay-panel">
+    <div id="win-tier-label">BIG WIN</div>
+    <div id="win-overlay-amount">0</div>
+    <button id="win-overlay-close">COLLECT</button>
+  </div>
+</div>
+
+<!-- ░░░ MOBILE DRAWER BACKDROP ░░░ -->
+<div id="mobile-drawer-backdrop"></div>
+
+<!-- ░░░ MOBILE DRAWER (slides up from bottom on small screens) ░░░ -->
+<div id="mobile-drawer" role="dialog" aria-label="Game info">
+  <button id="mobile-drawer-close" aria-label="Close menu">✕</button>
+  <div id="mobile-drawer-title">JACKPOTS &amp; INFO</div>
+
+  <!-- Mini jackpot grid -->
+  <div id="mobile-jp-grid">
+    <div class="mjp-row mjp-grand">
+      <span class="mjp-label">GRAND</span>
+      <span class="mjp-val" id="mjp-grand">5,900,000</span>
+    </div>
+    <div class="mjp-row mjp-major">
+      <span class="mjp-label">MAJOR</span>
+      <span class="mjp-val" id="mjp-major">1,000,000</span>
+    </div>
+    <div class="mjp-row mjp-minor">
+      <span class="mjp-label">MINOR</span>
+      <span class="mjp-val" id="mjp-minor">280,000</span>
+    </div>
+    <div class="mjp-row mjp-mini">
+      <span class="mjp-label">MINI</span>
+      <span class="mjp-val" id="mjp-mini">50,000</span>
+    </div>
+  </div>
+
+  <!-- Frame mode toggle (mirrors the desktop MODE button) -->
+  <button id="mobile-frame-toggle">⬡ MODE: GOLD FRAME</button>
+
+  <!-- Payline hint -->
+  <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; Spacebar = Spin</p>
+</div>
+
+<!-- ░░░ PAYTABLE MODAL ░░░ -->
+<div id="paytable-modal" role="dialog" aria-modal="true" aria-label="Paytable">
+  <div id="paytable-content">
+    <div id="paytable-header">
+      <h2>PAYTABLE</h2>
+      <button id="paytable-close" aria-label="Close">✕</button>
+    </div>
+    <p class="pt-note">Payouts are multipliers of total bet &nbsp;·&nbsp; Wild substitutes all regular symbols &nbsp;·&nbsp; Scatter pays anywhere</p>
+    <div id="paytable-scroll">
+      <table id="paytable-table">
+        <thead>
+          <tr><th>Symbol</th><th>Name</th><th>Payouts</th></tr>
+        </thead>
+        <tbody id="paytable-body"></tbody>
+      </table>
+      <div id="payline-diagrams">
+        <h3>PAYLINES</h3>
+        <div id="pl-grid">
+          <p>1 · Middle row &nbsp; 2 · Top row &nbsp; 3 · Bottom row</p>
+          <p>4 · V shape &nbsp; 5 · Inverted V</p>
+          <p>6 · Top→Mid→Bot→Mid→Top &nbsp; 7 · Bot→Mid→Top→Mid→Bot</p>
+          <p>8 · Top-Top-Mid-Bot-Bot &nbsp; 9 · Bot-Bot-Mid-Top-Top</p>
+          <p>10 · Mid-Top-Mid-Bot-Mid</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+<script>
+  // ── Jackpot ticker — slowly growing values (syncs desktop bar + mobile drawer) ──
+  (function () {
+    const tickers = [
+      { id: 'jp-grand', mobileId: 'mjp-grand', val: 5900000,  rate: 31  },
+      { id: 'jp-major', mobileId: 'mjp-major', val: 1000000,  rate: 9   },
+      { id: 'jp-minor', mobileId: 'mjp-minor', val: 280000,   rate: 3   },
+      { id: 'jp-mini',  mobileId: 'mjp-mini',  val: 50000,    rate: 1   },
+    ];
+    tickers.forEach(t => {
+      const el       = document.getElementById(t.id);
+      const mobileEl = document.getElementById(t.mobileId);
+      setInterval(() => {
+        t.val += t.rate;
+        const str = t.val.toLocaleString();
+        if (el)       el.textContent       = str;
+        if (mobileEl) mobileEl.textContent = str;
+      }, 120);
+    });
+  })();
+</script>
+
+<script>
+  // ── Profile pic picker ──
+  (function () {
+    const btn     = document.getElementById('profile-btn');
+    const img     = document.getElementById('profile-img');
+    const picker  = document.getElementById('profile-picker');
+    const opts    = document.querySelectorAll('.picker-opt');
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      picker.classList.toggle('open');
+    });
+    opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        img.src = opt.dataset.src;
+        // Highlight selected
+        opts.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        picker.classList.remove('open');
+      });
+    });
+    // Close when clicking outside
+    document.addEventListener('click', e => {
+      if (!document.getElementById('profile-widget').contains(e.target)) {
+        picker.classList.remove('open');
+      }
+    });
+  })();
+
+  // ── Reel frame: fade in once the image loads ──
+  (function () {
+    const frameImg = document.getElementById('reel-frame-img');
+    if (!frameImg) return;
+    frameImg.onload  = () => frameImg.classList.add('loaded');
+    frameImg.onerror = () => {};  // silently hidden if not present yet
+  })();
+
+  // ── Win overlay close button — delegates to game.js hideWinOverlay ──
+  (function () {
+    const closeBtn = document.getElementById('win-overlay-close');
+    const overlay  = document.getElementById('win-overlay');
+    if (closeBtn) closeBtn.addEventListener('click', () => hideWinOverlay());
+    if (overlay)  overlay.addEventListener('click', e => { if (e.target === overlay) hideWinOverlay(); });
+  })();
+
+  // ── Frame style toggle ──
+  (function () {
+    const btn   = document.getElementById('frame-toggle-btn');
+    const board = document.getElementById('game-board');
+    if (!btn || !board) return;
+    btn.addEventListener('click', () => {
+      const off = board.classList.toggle('frame-off');
+      btn.title = off ? 'Switch to gold frame' : 'Switch to transparent';
+      // Sync label in mobile drawer
+      const mobileToggle = document.getElementById('mobile-frame-toggle');
+      if (mobileToggle) mobileToggle.textContent = off ? '⬡ MODE: TRANSPARENT' : '⬡ MODE: GOLD FRAME';
+    });
+  })();
+
+  // ── Mobile drawer ──
+  (function () {
+    const menuBtn   = document.getElementById('mobile-menu-btn');
+    const drawer    = document.getElementById('mobile-drawer');
+    const backdrop  = document.getElementById('mobile-drawer-backdrop');
+    const closeBtn  = document.getElementById('mobile-drawer-close');
+    const mobileToggle = document.getElementById('mobile-frame-toggle');
+    const board     = document.getElementById('game-board');
+    const desktopBtn = document.getElementById('frame-toggle-btn');
+
+    function openDrawer()  {
+      drawer.classList.add('open');
+      backdrop.classList.add('open');
+      document.body.classList.add('drawer-open');
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('open');
+      document.body.classList.remove('drawer-open');
+    }
+
+    if (menuBtn)  menuBtn.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+    // Mobile frame toggle mirrors desktop button
+    if (mobileToggle && board) {
+      mobileToggle.addEventListener('click', () => {
+        const off = board.classList.toggle('frame-off');
+        mobileToggle.textContent = off ? '⬡ MODE: TRANSPARENT' : '⬡ MODE: GOLD FRAME';
+        if (desktopBtn) desktopBtn.title = off ? 'Switch to gold frame' : 'Switch to transparent';
+      });
+    }
+  })();
+</script>
+
+</body>
+</html>
