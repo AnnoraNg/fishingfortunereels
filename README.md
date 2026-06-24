@@ -4,24 +4,6 @@ A polished 5-reel × 3-row fishing-themed slot machine built with plain HTML, CS
 
 ---
 
-## How to Run
-
-**Option A — open directly:**
-1. Open `index.html` in any modern browser (Chrome, Firefox, Safari, Edge).
-2. Done. No server needed.
-
-**Option B — local dev server (avoids any browser CORS quirks with `file://`):**
-```bash
-# Python 3
-python3 -m http.server 8080
-
-# Node (npx)
-npx serve .
-```
-Then visit `http://localhost:8080`.
-
----
-
 ## How to Regenerate Sprites
 
 Sprites are generated from SVG source using Python and ImageMagick.
