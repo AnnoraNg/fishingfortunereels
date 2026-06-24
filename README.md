@@ -1,24 +1,6 @@
 # Fishing Fortune Reels 🎣
 
-A polished 5-reel × 3-row fishing-themed slot machine built with plain HTML, CSS, and JavaScript — no build tools required.
-
----
-
-## How to Regenerate Sprites
-
-Sprites are generated from SVG source using Python and ImageMagick.
-
-**Requirements:**
-- Python 3 (stdlib only — no extra packages)
-- ImageMagick (`convert` command, version 6 or 7)
-
-```bash
-python3 generate_assets.py
-```
-
-This writes all 12 PNG files into `assets/`. Re-run any time you want to tweak artwork.
-
-The legacy `generate_assets.js` (Node.js / canvas) is also included but requires the `canvas` native npm package, which needs a full build environment.
+A fully-featured 5-reel × 3-row fishing-themed slot machine built entirely in plain HTML, CSS, and JavaScript. No frameworks, no build tools, no dependencies — just open `index.html` in a browser and play.
 
 ---
 
@@ -26,84 +8,119 @@ The legacy `generate_assets.js` (Node.js / canvas) is also included but requires
 
 ```
 fishing-fortune-reels/
-├── index.html            Main game page
-├── style.css             All styling
-├── game.js               Game logic (config, RNG, evaluation, animation, UI)
-├── generate_assets.py    Sprite generator (Python + ImageMagick)
-├── generate_assets.js    Alternative generator (Node.js + canvas)
-├── README.md             This file
-└── assets/
-    ├── small_fish.png
-    ├── big_fish.png
-    ├── crab.png
-    ├── octopus.png
-    ├── pearl_shell.png
-    ├── anchor.png
-    ├── fishing_hook.png
-    ├── treasure_chest.png
-    ├── wild_golden_net.png
-    ├── scatter_lucky_lure.png
-    ├── background_ocean.png
-    └── slot_frame.png
+├── index.html       Game page — layout, overlays, inline scripts
+├── style.css        All styling, animations, responsive breakpoints
+├── game.js          Game logic — config, RNG, reels, evaluation, UI
+├── README.md        This file
+└── assets/          All image assets (symbols, backgrounds, UI)
 ```
+
+The `assets/` folder contains PNG artwork for all slot symbols, win banners, UI panels, and the ocean background.
 
 ---
 
-## Where to Adjust Probabilities
+## Gameplay
+
+### Core mechanics
+
+- **5 reels, 3 rows, 10 paylines** — left-to-right, minimum 3 matching symbols to win.
+- **Wild (Golden Net)** — substitutes for any regular symbol on a payline.
+- **Scatter (Lucky Lure)** — 3 or more anywhere on the reels triggers free spins and pays a scatter bonus.
+- **Free spins** — cost nothing, apply a 2× multiplier to all line wins, and can retrigger if more scatters land.
+
+### Win system
+
+Wins are tiered based on the win-to-bet multiplier:
+
+| Tier | Multiplier | Banner |
+|---|---|---|
+| BIG WIN | 2× – 9× | Koi fish banner |
+| MEGA WIN | 10× – 24× | Giant clam / pearl banner |
+| MASSIVE WIN | 25×+ | Marlin / swordfish banner |
+
+Each tier shows a full-width animated banner with a counting number that builds up to the win amount. The banner stays on screen until you press **COLLECT** (or auto-dismisses after 8 seconds).
+
+### Win display
+
+The **TOTAL WIN** counter in the bottom bar accumulates across your entire session — it never resets to zero. Every winning spin adds to the running total so you can see how much you've won overall.
+
+### Early win boost
+
+To get things started, win probability is boosted for the first 10 spins. Spins 3, 7, 13, and 18 are guaranteed wins.
+
+---
+
+## Controls
+
+| Action | How |
+|---|---|
+| Spin | SPIN button, click anywhere on the reel area, or Spacebar |
+| Adjust bet | − / + buttons, or MAX for the highest bet |
+| Change speed | **⚡ ×1** button (top-right) — tap to cycle ×1 → ×2 → ×4 |
+| Toggle frame | **MODE** button (top-right) — switches between gold frame and transparent mode |
+| View paytable | **i** button in the bottom bar |
+| Change avatar | Click the profile picture (top-left) — 6 avatars available |
+
+---
+
+## UI Features
+
+### Ocean background
+Animated deep-sea background with continuously scrolling sunlight shafts, floating ambient bubbles, and a slow breathing brightness effect.
+
+### Gold frame mode
+The reel area is framed in a layered gold metallic border with corner gems and pearl dot accents. Toggle to **transparent mode** for a frosted glass look that lets the ocean scene show through unobstructed.
+
+### Jackpot bar
+Four live jackpot tickers (GRAND / MAJOR / MINOR / MINI) sit above the reels and slowly count up in real time. Accessible on mobile via the ☰ menu drawer.
+
+### Profile avatar
+A circular avatar button floats top-left. Tap to open a picker with 6 character options.
+
+### Speed control
+The **⚡ ×1 / ×2 / ×4** button scales the entire spin sequence — reel scroll speed, stagger between reels, and total stop time — so higher speeds complete each spin proportionally faster.
+
+### Win particles
+Coin and bubble particles burst from the reels on any win. Particle count scales with win size.
+
+---
+
+## Responsive Design
+
+The layout adapts across screen sizes:
+
+| Screen | Behaviour |
+|---|---|
+| Desktop (≥ 900px) | Full layout — jackpot bar, title, all controls in one row |
+| Tablet (≤ 899px) | Slightly smaller reels and UI elements |
+| Large mobile (≤ 599px) | Bottom bar wraps into two rows; jackpot bar and payline info move into the ☰ drawer; speed and mode buttons hidden |
+| Small mobile (≤ 479px) | Game title hidden; further compression |
+| Very small (≤ 380px) | Balance hidden (visible in drawer); maximum compression |
+| Short viewport (height ≤ 700px) | Jackpot bar hidden |
+| Very short (height ≤ 580px) | Title and status bar hidden |
+
+---
+
+## Configuration (`game.js` → `CONFIG`)
+
+| Key | Default | Description |
+|---|---|---|
+| `startingBalance` | 15,000,000 | Starting coins — enough for 30 max bets |
+| `betLevels` | [10k, 20k, 50k, 100k, 200k, 500k] | Available bet sizes |
+| `defaultBetIndex` | 1 | Bet selected on load (20,000) |
+| `reelSpeed` | 14 cells/s | Scroll speed during spin (×1 speed) |
+| `reelStagger` | 300 ms | Delay between each reel stopping left → right |
+| `lastReelStop` | 2800 ms | Time until the last reel stops (×1 speed) |
+
+### Symbol weights and payouts
 
 In `game.js`, find the `SYMBOLS` array near the top:
 
 ```js
-const SYMBOLS = [
-  { id: 'small_fish', ..., weight: 22,  payouts: { 3: 0.2, 4: 0.6, 5: 1.2 } },
-  { id: 'crab',       ..., weight: 18,  payouts: { 3: 0.25, ... } },
-  ...
-];
+{ id: 'crab', weight: 18, payouts: { 3: 0.25, 4: 0.7, 5: 1.5 } }
 ```
 
-- **`weight`** — higher = more frequent. Weights are relative; the total doesn't need to sum to any specific value. Each symbol is sampled proportionally.
-- **`payouts`** — multiplier of total bet for 3, 4, or 5-of-a-kind on a payline.
+- **`weight`** — relative frequency. Higher = appears more often.
+- **`payouts`** — bet multiplier for 3, 4, or 5 matching symbols on a payline.
 
----
-
-## Where to Adjust Payouts
-
-Same `SYMBOLS` array — the `payouts` object. Keys are match count (3/4/5), values are bet multipliers.
-
-**Scatter payouts** are defined inline in `evaluateWins()` in `game.js`:
-```js
-const scatterPayouts = { 3: 2, 4: 5, 5: 20 };
-```
-
-**Free-spin settings** are in the `CONFIG` object at the top of `game.js`:
-```js
-freeSpins: {
-  scatter3: { spins: 5,  multiplier: 2 },
-  scatter4: { spins: 8,  multiplier: 2 },
-  scatter5: { spins: 12, multiplier: 2 },
-},
-```
-
----
-
-## Other Config Options (`game.js` → `CONFIG`)
-
-| Key              | Default  | Description                                    |
-|------------------|----------|------------------------------------------------|
-| `startingBalance`| 10,000   | Player's starting coins                        |
-| `betLevels`      | [50,100,200,500,1000] | Available bet sizes                |
-| `defaultBetIndex`| 1        | Which bet is selected on start (index into array) |
-| `spinDuration`   | 2800 ms  | How long until the last reel stops             |
-| `reelStagger`    | 320 ms   | Extra delay between each reel stopping (L→R)  |
-
----
-
-## Gameplay Summary
-
-- **5 reels, 3 rows, 10 paylines** — left-to-right, minimum 3 matching symbols.
-- **Wild (Golden Net)** — substitutes for any regular symbol; does not count as Scatter.
-- **Scatter (Lucky Lure)** — 3+ anywhere trigger free spins plus a scatter coin payout.
-- **Free spins** — do not cost coins, apply a 2× multiplier to all line wins, and can retrigger.
-- **Balance counting animation** — balance counts up on win.
-- **Coin/bubble particles** — burst on win; bubble burst on scatter trigger.
-- **Keyboard shortcut** — Spacebar = Spin.
+Scatter payouts are set inside `evaluateWins()`. Free-spin counts and the win multiplier are in the `freeSpins` block in `CONFIG`.
