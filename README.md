@@ -1,6 +1,6 @@
 # Fishing Fortune Reels 🎣
 
-A fully-featured 5-reel × 3-row fishing-themed slot machine built entirely in plain HTML, CSS, and JavaScript. No frameworks, no build tools, no dependencies — just open `index.html` in a browser and play.
+A fully-featured 5-reel × 3-row fishing-themed slot machine built entirely in plain HTML, CSS, and JavaScript. No frameworks, no build tools, no dependencies,  just open `index.html` in a browser and play.
 
 ---
 
