@@ -7,6 +7,14 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Remove focus outlines on all interactive/clickable game elements */
+#game-board, #spin-btn, #bet-minus, #bet-plus, #max-bet-btn,
+#paytable-btn, #frame-toggle-btn, #speed-toggle-btn,
+#profile-btn, #mobile-menu-btn, #win-overlay-close,
+#mobile-frame-toggle {
+  outline: none;
+}
+
 :root {
   /* Ocean palette — deep navy-to-royal */
   --ocean-sky    : #103880;
@@ -829,21 +837,6 @@ body.paytable-open #speed-toggle-btn { display: none; }
 }
 #game-board.frame-off .reel-col::before { display: none; }
 
-/* ─── Reel Frame Overlay ───────────────────────────────────────────── */
-/* Absolutely positioned over the reel grid; transparent center shows reels */
-#reel-frame-img {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(100% - 28px); /* aligns with reel-grid inside the board padding */
-  height: auto;
-  pointer-events: none;
-  z-index: 4;  /* above reel columns (z-index: 3), below particles (z-index: 20) */
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-#reel-frame-img.loaded { opacity: 1; }
-
 /* ─── Win Celebration Overlay ──────────────────────────────────────── */
 #win-overlay {
   display: none;
@@ -883,6 +876,7 @@ body.paytable-open #speed-toggle-btn { display: none; }
   align-items: center; justify-content: center;
   gap: 10px; padding: 44px 32px 32px;
   overflow: hidden;
+  background: #030d1e; /* dark fallback while banner image loads */
   animation: panelPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 @keyframes panelPop {
@@ -1313,7 +1307,14 @@ body.paytable-open #mobile-menu-btn { display: none; }
     gap: 0;
     row-gap: 0;
     border-radius: 12px;
+    /* PNG background misaligns on 2-row layout — use plain dark gradient */
+    background-image: none;
+    background: linear-gradient(180deg, #0c1c32 0%, #060f1e 100%);
   }
+  /* Restore dark-bg-friendly text colors */
+  #bottom-bar .bc-label { color: rgba(160,200,240,0.7); }
+  #bottom-bar .bc-value.gold { color: var(--gold); text-shadow: 0 0 8px rgba(255,200,0,0.55); }
+  #bottom-bar .bc-value.teal { color: var(--neon-teal); text-shadow: 0 0 8px rgba(0,255,200,0.5); }
 
   /* Row 1: Balance | Win | Paytable — use order to arrange */
   #balance-cell {
@@ -1352,8 +1353,12 @@ body.paytable-open #mobile-menu-btn { display: none; }
     min-width: 120px;
   }
   #max-bet-btn { order: 6; flex: 0 0 auto; margin: 4px 3px 4px 4px; }
-  #spin-btn    { order: 7; flex: 1 0 100px; margin: 4px 0 4px 4px;
-                 padding: 8px 16px; min-width: 100px; font-size: clamp(1rem, 4vw, 1.25rem); }
+  #spin-btn    { order: 7; flex: 1 0 90px; margin: 3px 0 3px 4px;
+                 padding: 6px 12px; min-width: 90px; font-size: clamp(0.88rem, 3.5vw, 1.05rem); }
+
+  /* Paytable icon smaller on mobile */
+  .icon-btn { width: 42px; height: 42px; min-width: 42px; font-size: 1.2rem; }
+  .icon-btn i { font-size: 1.2rem; }
 
   /* Slightly tighter label/value fonts */
   .bc-label { font-size: 0.58rem; }
