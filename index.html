@@ -358,6 +358,22 @@
         if (desktopBtn) desktopBtn.title = off ? 'Switch to gold frame' : 'Switch to transparent';
       });
     }
+
+    // Mobile speed toggle — cycles ×1 → ×2 → ×4
+    const mobileSpeedBtn  = document.getElementById('mobile-speed-toggle');
+    const desktopSpeedBtn = document.getElementById('speed-toggle-btn');
+    const speedLabels = ['×1', '×2', '×4'];
+    let speedIdx = 0;
+    if (mobileSpeedBtn) {
+      mobileSpeedBtn.addEventListener('click', () => {
+        speedIdx = (speedIdx + 1) % speedLabels.length;
+        const label = speedLabels[speedIdx];
+        mobileSpeedBtn.textContent  = `⚡ SPEED: ${label}`;
+        if (desktopSpeedBtn) desktopSpeedBtn.textContent = `⚡ ${label}`;
+        // Sync into game.js state if available
+        if (typeof state !== 'undefined') state.speedIndex = speedIdx;
+      });
+    }
   })();
 </script>
 
