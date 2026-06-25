@@ -110,9 +110,6 @@
     <!-- 5 × 3 reel grid — built by game.js -->
     <div id="reel-grid"></div>
 
-    <!-- Decorative reel frame overlay — sits above the reels, transparent center -->
-    <!-- Fades in automatically once reel_frame.png is present in assets/ -->
-    <img id="reel-frame-img" src="assets/reel_frame.png" alt="" aria-hidden="true" draggable="false">
   </main>
 
   <!-- ── STATUS BAR ── -->
@@ -301,14 +298,6 @@
         picker.classList.remove('open');
       }
     });
-  })();
-
-  // ── Reel frame: fade in once the image loads ──
-  (function () {
-    const frameImg = document.getElementById('reel-frame-img');
-    if (!frameImg) return;
-    frameImg.onload  = () => frameImg.classList.add('loaded');
-    frameImg.onerror = () => {};  // silently hidden if not present yet
   })();
 
   // ── Win overlay close button — delegates to game.js hideWinOverlay ──
