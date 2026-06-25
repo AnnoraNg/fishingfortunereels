@@ -11,7 +11,7 @@
 #game-board, #spin-btn, #bet-minus, #bet-plus, #max-bet-btn,
 #paytable-btn, #frame-toggle-btn, #speed-toggle-btn,
 #profile-btn, #mobile-menu-btn, #win-overlay-close,
-#mobile-frame-toggle {
+#mobile-frame-toggle, #mobile-speed-toggle {
   outline: none;
 }
 
@@ -1370,11 +1370,15 @@ body.paytable-open #mobile-menu-btn { display: none; }
   }
   #max-bet-btn { order: 6; flex: 0 0 auto; margin: 4px 3px 4px 4px; }
   #spin-btn    { order: 7; flex: 1 0 90px; margin: 3px 0 3px 4px;
-                 padding: 6px 12px; min-width: 90px; font-size: clamp(0.88rem, 3.5vw, 1.05rem); }
+                 padding: 5px 10px !important; min-width: 90px;
+                 height: 42px; max-height: 42px;
+                 font-size: 0.95rem !important;
+                 background-size: 100% 100% !important; }
 
   /* Paytable icon smaller on mobile */
-  .icon-btn { width: 42px; height: 42px; min-width: 42px; font-size: 1.2rem; }
-  .icon-btn i { font-size: 1.2rem; }
+  .icon-btn { width: 38px !important; height: 38px !important; min-width: 38px !important;
+              font-size: 1.1rem !important; margin-right: 4px; }
+  .icon-btn i { font-size: 1.1rem !important; }
 
   /* Slightly tighter label/value fonts */
   .bc-label { font-size: 0.58rem; }
