@@ -129,6 +129,35 @@ function generateBoostedGrid() {
   const grid = generateGrid();
   const n = state.spinCount;
 
+  // ── Hardcoded showcase spins ──────────────────────────────────────────
+  // Spin 2: forced BIG WIN  — 5× pearl_shell on middle row  (~3× bet)
+  // Spin 5: forced MEGA WIN — 5× treasure_chest on middle row (~12× bet)
+  // Other rows are intentionally mixed so no other paylines fire.
+  if (n === 2) {
+    // Row 0 & 2: alternating symbols so no 3-match on any other payline
+    const mixA = ['small_fish','crab','small_fish','crab','small_fish'];
+    const mixB = ['anchor','big_fish','anchor','big_fish','anchor'];
+    for (let c = 0; c < CONFIG.reels; c++) {
+      grid[c][0] = mixA[c];
+      grid[c][1] = 'pearl_shell';   // middle row — 5-of-a-kind
+      grid[c][2] = mixB[c];
+    }
+    return grid;
+  }
+
+  if (n === 5) {
+    // Row 0 & 2: alternating symbols so no 3-match on any other payline
+    const mixA = ['crab','small_fish','crab','small_fish','crab'];
+    const mixB = ['anchor','fishing_hook','anchor','fishing_hook','anchor'];
+    for (let c = 0; c < CONFIG.reels; c++) {
+      grid[c][0] = mixA[c];
+      grid[c][1] = 'treasure_chest'; // middle row — 5-of-a-kind (12× bet = MEGA WIN)
+      grid[c][2] = mixB[c];
+    }
+    return grid;
+  }
+  // ─────────────────────────────────────────────────────────────────────
+
   // Spins 1-4:  guaranteed win — 3-of-a-kind, 50% chance extends to 4-of-a-kind
   // Spins 5-7:  90% chance of a forced 3-match
   // Spins 8-10: 65% chance of a forced 3-match
