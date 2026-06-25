@@ -716,12 +716,25 @@ function wireEvents() {
   elSpinBtn.addEventListener('click', doSpin);
 
   // Speed toggle button
-  const speedBtn = document.getElementById('speed-toggle-btn');
+  const speedBtn       = document.getElementById('speed-toggle-btn');
+  const mobileSpeedBtn = document.getElementById('mobile-speed-toggle');
+
+  function applySpeed() {
+    const lv = SPEED_LEVELS[state.speedIndex];
+    if (speedBtn)       speedBtn.textContent       = lv.label;
+    if (mobileSpeedBtn) mobileSpeedBtn.textContent = `⚡ SPEED: ×${lv.mult}`;
+  }
+
   if (speedBtn) {
     speedBtn.addEventListener('click', () => {
       state.speedIndex = (state.speedIndex + 1) % SPEED_LEVELS.length;
-      const lv = SPEED_LEVELS[state.speedIndex];
-      speedBtn.textContent = lv.label;
+      applySpeed();
+    });
+  }
+  if (mobileSpeedBtn) {
+    mobileSpeedBtn.addEventListener('click', () => {
+      state.speedIndex = (state.speedIndex + 1) % SPEED_LEVELS.length;
+      applySpeed();
     });
   }
 
