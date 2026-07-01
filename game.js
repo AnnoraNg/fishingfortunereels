@@ -124,67 +124,87 @@ function generateGrid() {
   );
 }
 
-// Mid-tier symbols used for win boosts (not wild/scatter)
-const BOOST_SYMBOLS = ['crab', 'anchor', 'big_fish', 'pearl_shell'];
-
-// Spins that are always guaranteed a win
-const GUARANTEED_SPINS = new Set([3, 7, 13, 18]);
+// ═══════════════════════════════════════════════════════════════════════════
+// DEMO SCRIPT — a fully fixed (non-probabilistic) sequence of moments.
+// No chance-based forcing, so wins never chain unpredictably. The whole
+// sequence repeats every SCRIPT_LENGTH spins (spin 20 plays out like spin 1,
+// spin 21 like spin 2, etc.) — free spins consume script positions too, so
+// the cycle naturally includes them.
+// ═══════════════════════════════════════════════════════════════════════════
+const SCRIPT_LENGTH = 19;
 
 function generateBoostedGrid() {
   const grid = generateGrid();
   if (!CONFIG.demoMode) return grid;  // real mode — pure weighted RNG, no forced wins
 
-  const n = state.spinCount;
+  // Position within the repeating script (1-based, wraps every SCRIPT_LENGTH spins)
+  const n = ((state.spinCount - 1) % SCRIPT_LENGTH) + 1;
 
-  // ── Hardcoded showcase spins ──────────────────────────────────────────
-  // Spin 2: forced BIG WIN  — 5× pearl_shell on middle row  (~3× bet)
-  // Spin 5: forced MEGA WIN — 5× treasure_chest on middle row (~12× bet)
-  // Other rows are intentionally mixed so no other paylines fire.
+  // Spin 2 — BIG WIN: 5× Pearl Shell on the middle row (~3× bet)
   if (n === 2) {
-    // Row 0 & 2: alternating symbols so no 3-match on any other payline
     const mixA = ['small_fish','crab','small_fish','crab','small_fish'];
     const mixB = ['anchor','big_fish','anchor','big_fish','anchor'];
     for (let c = 0; c < CONFIG.reels; c++) {
       grid[c][0] = mixA[c];
-      grid[c][1] = 'pearl_shell';   // middle row — 5-of-a-kind
+      grid[c][1] = 'pearl_shell';
       grid[c][2] = mixB[c];
     }
     return grid;
   }
 
+  // Spin 4 — small win: 3-of-a-kind Crab on the middle row only
+  if (n === 4) {
+    const mixA = ['anchor','fishing_hook','anchor','fishing_hook','anchor'];
+    const mixB = ['fishing_hook','anchor','fishing_hook','anchor','fishing_hook'];
+    for (let c = 0; c < CONFIG.reels; c++) {
+      grid[c][0] = mixA[c];
+      grid[c][2] = mixB[c];
+    }
+    grid[0][1] = grid[1][1] = grid[2][1] = 'crab';
+    grid[3][1] = 'big_fish';
+    grid[4][1] = 'small_fish';
+    return grid;
+  }
+
+  // Spin 5 — MEGA WIN: 5× Treasure Chest on the middle row (~12× bet)
   if (n === 5) {
-    // Row 0 & 2: alternating symbols so no 3-match on any other payline
     const mixA = ['crab','small_fish','crab','small_fish','crab'];
     const mixB = ['anchor','fishing_hook','anchor','fishing_hook','anchor'];
     for (let c = 0; c < CONFIG.reels; c++) {
       grid[c][0] = mixA[c];
-      grid[c][1] = 'treasure_chest'; // middle row — 5-of-a-kind (12× bet = MEGA WIN)
+      grid[c][1] = 'treasure_chest';
       grid[c][2] = mixB[c];
     }
     return grid;
   }
-  // ─────────────────────────────────────────────────────────────────────
 
-  // Spins 1-4:  guaranteed win — 3-of-a-kind, 50% chance extends to 4-of-a-kind
-  // Spins 5-7:  90% chance of a forced 3-match
-  // Spins 8-10: 65% chance of a forced 3-match
-  // Specific spins (3, 7, 13, 18): always guaranteed
-  // After spin 10 (outside guaranteed set): normal RNG
-  let forceWin = false;
-  if      (GUARANTEED_SPINS.has(n)) forceWin = true;
-  else if (n <= 4)                  forceWin = true;
-  else if (n <= 7)                  forceWin = Math.random() < 0.90;
-  else if (n <= 10)                 forceWin = Math.random() < 0.65;
-
-  if (forceWin) {
-    const sym = BOOST_SYMBOLS[Math.floor(Math.random() * BOOST_SYMBOLS.length)];
-    grid[0][1] = sym;
-    grid[1][1] = sym;
-    grid[2][1] = sym;
-    // 50% chance to extend to 4-of-a-kind on guaranteed spins and first 4 spins
-    if ((GUARANTEED_SPINS.has(n) || n <= 4) && Math.random() < 0.50) grid[3][1] = sym;
+  // Spin 9 — MASSIVE WIN: whole grid fills with Treasure Chest, every
+  // payline hits 5-of-a-kind at once (~120× bet) — the big showcase moment
+  if (n === 9) {
+    for (let c = 0; c < CONFIG.reels; c++)
+      for (let r = 0; r < CONFIG.rows; r++)
+        grid[c][r] = 'treasure_chest';
+    return grid;
   }
 
+  // Spin 14 — Scatter trigger: exactly 3 Scatters spread across the top row
+  if (n === 14) {
+    const midFill = ['small_fish','crab','anchor','big_fish','fishing_hook'];
+    const botFill = ['anchor','big_fish','fishing_hook','small_fish','crab'];
+    for (let c = 0; c < CONFIG.reels; c++) {
+      grid[c][1] = midFill[c];
+      grid[c][2] = botFill[c];
+    }
+    grid[0][0] = 'scatter_lucky_lure';
+    grid[2][0] = 'scatter_lucky_lure';
+    grid[4][0] = 'scatter_lucky_lure';
+    grid[1][0] = 'octopus';
+    grid[3][0] = 'octopus';
+    return grid;
+  }
+
+  // Every other spin in the script: no forcing — natural weighted RNG,
+  // same odds as real mode. Losses stay losses; any win here is pure chance.
   return grid;
 }
 
@@ -672,6 +692,28 @@ function hideWinOverlay() {
   setTimeout(() => {
     overlay.classList.remove('open', 'closing', 'tier-big', 'tier-mega', 'tier-massive');
   }, 500);
+}
+
+// Full session reset — used when switching between Demo and Real mode so
+// neither mode's progress/balance carries over into the other.
+function resetSession() {
+  if (state.spinning) return;   // don't reset mid-spin
+
+  state.balance    = CONFIG.startingBalance;
+  state.betIndex   = CONFIG.defaultBetIndex;
+  state.freeSpins  = 0;
+  state.sessionWin = 0;
+  state.spinCount  = 0;
+  state.lastWin    = 0;
+  state.winLines   = [];
+  state.winCells   = new Set();
+
+  clearWinEffects();
+  elBalance.textContent = state.balance.toLocaleString();
+  elLastWin.textContent = '0';
+  updateBetDisplay();
+  updateFreeSpinsDisplay();
+  setStatus('Welcome to Fishing Fortune Reels · Press SPIN to cast! 🎣');
 }
 
 function updateBetDisplay() {

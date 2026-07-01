@@ -388,8 +388,11 @@
 
     function toggle() {
       if (typeof CONFIG === 'undefined') return;
+      if (typeof state !== 'undefined' && state.spinning) return; // ignore mid-spin
       CONFIG.demoMode = !CONFIG.demoMode;
       render();
+      // Neither mode's progress should carry into the other — fresh session each time
+      if (typeof resetSession === 'function') resetSession();
     }
 
     if (desktopBtn) desktopBtn.addEventListener('click', toggle);
