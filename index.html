@@ -63,6 +63,11 @@
   </div>
 </div>
 
+<!-- ░░░ POSEIDON MASCOT (floats beside the reel board on wide screens) ░░░ -->
+<div id="poseidon-wrap" aria-hidden="true">
+  <img id="poseidon-mascot" src="assets/poseidon_mascot.png" alt="">
+</div>
+
 <!-- ░░░ MAIN APP ░░░ -->
 <div id="app">
 
@@ -301,6 +306,37 @@
         picker.classList.remove('open');
       }
     });
+  })();
+
+  // ── Poseidon mascot — pinned beside the reel board, only where there's room ──
+  (function () {
+    const wrap  = document.getElementById('poseidon-wrap');
+    const board = document.getElementById('game-board');
+    if (!wrap || !board) return;
+
+    const GAP = 70; // gap between the board's gold frame and the mascot
+
+    function place() {
+      const rect       = board.getBoundingClientRect();
+      const wrapWidth  = wrap.offsetWidth;
+      const spaceRight = window.innerWidth - rect.right;
+
+      // Not enough room beside the board (tablet/mobile) — hide it
+      if (spaceRight < wrapWidth + GAP + 20) {
+        wrap.style.display = 'none';
+        return;
+      }
+      wrap.style.display   = 'block';
+      wrap.style.left      = (rect.right + GAP) + 'px';
+      wrap.style.top       = (rect.top + rect.height / 2) + 'px';
+      wrap.style.transform = 'translateY(-50%)';
+    }
+
+    window.addEventListener('resize', place);
+    window.addEventListener('load', place);
+    place();
+    // Re-check periodically in case the board size changes (e.g. free spins banner)
+    setInterval(place, 500);
   })();
 
   // ── Win overlay close button — delegates to game.js hideWinOverlay ──

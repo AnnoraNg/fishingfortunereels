@@ -280,6 +280,28 @@ html, body {
 .corner.bl { bottom: -2px; left: -2px; }
 .corner.br { bottom: -2px; right: -2px; }
 
+/* ─── Poseidon Mascot ──────────────────────────────────────────────── */
+/* Positioned via JS (game placed relative to #game-board's live rect); */
+/* display:none by default until JS confirms there's room beside the board. */
+#poseidon-wrap {
+  position: fixed;
+  display: none;
+  z-index: 1;                       /* above ocean bg, below #app content */
+  width: clamp(150px, 14vw, 220px);
+  pointer-events: none;
+}
+#poseidon-mascot {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 16px 20px rgba(0,0,0,0.45));
+  animation: poseidonFloat 2s ease-in-out infinite alternate;
+}
+@keyframes poseidonFloat {
+  from { transform: translateY(-10px); }
+  to   { transform: translateY(10px); }
+}
+
 /* ─── Reel Grid ────────────────────────────────────────────────────── */
 #reel-grid {
   position: relative; z-index: 3;
