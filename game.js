@@ -18,6 +18,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 const CONFIG = {
+  // Demo mode = early-spin guaranteed wins + hardcoded showcase spins (good for
+  // a portfolio/demo build so features are visible fast). Set to false for
+  // "real" slot behaviour — pure weighted RNG from the very first spin.
+  demoMode : true,
+
   startingBalance : 15_000_000,
   betLevels       : [10_000, 20_000, 50_000, 100_000, 200_000, 500_000],
   defaultBetIndex : 1,
@@ -54,7 +59,7 @@ const SYMBOLS = [
   { id:'octopus',            label:'Octopus',        img:'assets/octopus.png',            weight:5,   payouts:{3:0.8, 4:2.5, 5:6.0 } },
   { id:'treasure_chest',     label:'Treasure Chest', img:'assets/treasure_chest.png',     weight:3,   payouts:{3:1.5, 4:5.0, 5:12.0} },
   { id:'wild_golden_net',    label:'Wild',           img:'assets/wild_golden_net.png',    weight:1.5, payouts:null, isWild:true    },
-  { id:'scatter_lucky_lure', label:'Scatter',        img:'assets/scatter_lucky_lure.png', weight:0.5, payouts:null, isScatter:true },
+  { id:'scatter_lucky_lure', label:'Scatter',        img:'assets/scatter_lucky_lure.png', weight:3,   payouts:null, isScatter:true },
 ];
 
 const SYMBOL_POOL = [];
@@ -73,8 +78,8 @@ const PAYLINES = [
   [2,2,2,2,2],  // 3  Bottom row
   [0,1,2,1,0],  // 4  V shape
   [2,1,0,1,2],  // 5  Inverted V
-  [0,1,2,1,0],  // 6  (same pattern as 4)
-  [2,1,0,1,2],  // 7  (same pattern as 5)
+  [0,0,1,0,0],  // 6  Top-Top-Mid-Top-Top
+  [2,2,1,2,2],  // 7  Bottom-Bottom-Mid-Bottom-Bottom
   [0,0,1,2,2],  // 8  Top-Top-Mid-Bot-Bot
   [2,2,1,0,0],  // 9  Bot-Bot-Mid-Top-Top
   [1,0,1,2,1],  // 10 Mid-Top-Mid-Bot-Mid
@@ -127,6 +132,8 @@ const GUARANTEED_SPINS = new Set([3, 7, 13, 18]);
 
 function generateBoostedGrid() {
   const grid = generateGrid();
+  if (!CONFIG.demoMode) return grid;  // real mode — pure weighted RNG, no forced wins
+
   const n = state.spinCount;
 
   // ── Hardcoded showcase spins ──────────────────────────────────────────

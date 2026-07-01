@@ -36,6 +36,9 @@
   <span style="width:18px;height:18px;left:68%;bottom:-20px;animation-duration:13s;animation-delay:13s"></span>
 </div>
 
+<!-- ░░░ DEMO/REAL MODE TOGGLE (fixed top-right, left of SPEED) ░░░ -->
+<button id="demo-toggle-btn" title="Toggle demo mode (guaranteed early wins) vs real RNG" aria-label="Toggle demo or real spin mode">DEMO</button>
+
 <!-- ░░░ SPEED TOGGLE (fixed top-right, left of MODE) ░░░ -->
 <button id="speed-toggle-btn" title="Change spin speed" aria-label="Change spin speed">⚡ ×1</button>
 
@@ -223,6 +226,9 @@
   <!-- Speed toggle (mirrors the desktop ⚡ button) -->
   <button id="mobile-speed-toggle">⚡ SPEED: ×1</button>
 
+  <!-- Demo/Real toggle (mirrors the desktop DEMO/REAL button) -->
+  <button id="mobile-demo-toggle">🎲 SPINS: DEMO</button>
+
   <!-- Payline hint -->
   <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; Spacebar = Spin</p>
 </div>
@@ -247,7 +253,7 @@
         <div id="pl-grid">
           <p>1 · Middle row &nbsp; 2 · Top row &nbsp; 3 · Bottom row</p>
           <p>4 · V shape &nbsp; 5 · Inverted V</p>
-          <p>6 · Top→Mid→Bot→Mid→Top &nbsp; 7 · Bot→Mid→Top→Mid→Bot</p>
+          <p>6 · Top-Top-Mid-Top-Top &nbsp; 7 · Bot-Bot-Mid-Bot-Bot</p>
           <p>8 · Top-Top-Mid-Bot-Bot &nbsp; 9 · Bot-Bot-Mid-Top-Top</p>
           <p>10 · Mid-Top-Mid-Bot-Mid</p>
         </div>
@@ -359,6 +365,36 @@
       const mobileToggle = document.getElementById('mobile-frame-toggle');
       if (mobileToggle) mobileToggle.textContent = off ? '⬡ MODE: TRANSPARENT' : '⬡ MODE: GOLD FRAME';
     });
+  })();
+
+  // ── Demo/Real mode toggle — flips CONFIG.demoMode (syncs desktop + mobile) ──
+  (function () {
+    const desktopBtn = document.getElementById('demo-toggle-btn');
+    const mobileBtn  = document.getElementById('mobile-demo-toggle');
+
+    function render() {
+      // CONFIG is defined in game.js, loaded before this script
+      const isDemo = typeof CONFIG !== 'undefined' ? CONFIG.demoMode : true;
+      if (desktopBtn) {
+        desktopBtn.textContent = isDemo ? 'DEMO' : 'REAL';
+        desktopBtn.title = isDemo
+          ? 'Demo mode: early spins are boosted/guaranteed — click for real RNG'
+          : 'Real mode: pure weighted RNG — click for demo mode';
+      }
+      if (mobileBtn) {
+        mobileBtn.textContent = isDemo ? '🎲 SPINS: DEMO' : '🎲 SPINS: REAL';
+      }
+    }
+
+    function toggle() {
+      if (typeof CONFIG === 'undefined') return;
+      CONFIG.demoMode = !CONFIG.demoMode;
+      render();
+    }
+
+    if (desktopBtn) desktopBtn.addEventListener('click', toggle);
+    if (mobileBtn)  mobileBtn.addEventListener('click', toggle);
+    render();
   })();
 
   // ── Mobile drawer ──

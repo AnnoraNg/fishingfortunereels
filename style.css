@@ -810,6 +810,31 @@ html, body {
   box-shadow: 0 0 20px rgba(255,210,0,0.55), 0 3px 10px rgba(0,0,0,0.5);
 }
 
+/* ─── Demo/Real Mode Toggle Button (fixed top-right, left of SPEED) ─── */
+#demo-toggle-btn {
+  position: fixed;
+  top: 16px; right: 192px;  /* sits left of the speed toggle with a small gap */
+  z-index: 200;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 2px solid rgba(255,210,0,0.6);
+  background: rgba(0,20,60,0.65);
+  color: var(--gold);
+  font-size: 0.75rem; font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 12px rgba(255,200,0,0.3), 0 3px 8px rgba(0,0,0,0.4);
+  transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
+}
+#demo-toggle-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255,210,0,0.55), 0 3px 10px rgba(0,0,0,0.5);
+}
+
 /* ─── Frame Toggle Button (fixed top-right) ────────────────────────── */
 #frame-toggle-btn {
   position: fixed;
@@ -837,7 +862,8 @@ html, body {
 /* Hide fixed overlays when paytable is open */
 body.paytable-open #profile-widget,
 body.paytable-open #frame-toggle-btn,
-body.paytable-open #speed-toggle-btn { display: none; }
+body.paytable-open #speed-toggle-btn,
+body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ─── Transparent mode (no gold frame) ─────────────────────────────── */
 #game-board.frame-off {
@@ -1313,10 +1339,11 @@ body.paytable-open #mobile-menu-btn { display: none; }
 @media (max-width: 599px) {
   :root { --cell-size: clamp(62px, 16.5vw, 74px); }
 
-  /* Show mobile menu btn; hide desktop MODE + SPEED btns */
+  /* Show mobile menu btn; hide desktop MODE + SPEED + DEMO btns */
   #mobile-menu-btn { display: flex; }
   #frame-toggle-btn { display: none; }
   #speed-toggle-btn { display: none; }
+  #demo-toggle-btn { display: none; }
 
   #profile-btn  { width: 62px; height: 62px; }
   #profile-picker { top: 72px; }
