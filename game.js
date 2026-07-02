@@ -46,6 +46,12 @@ const CONFIG = {
     scatter4: { spins: 8,  multiplier: 2 },
     scatter5: { spins: 12, multiplier: 2 },
   },
+
+  // "Buy Feature" — instantly purchase Free Spins instead of landing Scatters
+  buyFreeSpins: {
+    multiplier : 100,  // cost = current bet × 100
+    spins      : 10,   // fixed number of Free Spins granted per purchase
+  },
 };
 
 // ── Symbols ─────────────────────────────────────────────────────────────────
@@ -274,7 +280,9 @@ function evaluateWins(grid, bet, multiplier = 1) {
 
 let elBalance, elBet, elLastWin, elFreeSpins, elStatus,
     elSpinBtn, elBetMinus, elBetPlus,
-    elPaytableBtn, elPaytableModal, elPaytableClose;
+    elPaytableBtn, elPaytableModal, elPaytableClose,
+    elBuyFsBtnDesktop, elBuyFsBtnMobile, elBuyFsModal,
+    elBuyFsCost, elBuyFsConfirm, elBuyFsCancel;
 
 // reelCols[col]  = the reel-col container element
 // reelCells[col][row] = the currently-visible cell div (updated after each spin)
@@ -531,8 +539,9 @@ async function doSpin() {
 
   state.spinning = true;
   clearWinEffects();
-  setStatus(isFree ? `🎁 Free Spin! (${state.freeSpins} remaining)` : '🎣 Reeling in…');
+  setStatus(isFree ? `🌊 Free Spin! (${state.freeSpins} remaining)` : '🎣 Reeling in…');
   elSpinBtn.disabled = elBetMinus.disabled = elBetPlus.disabled = true;
+  updateBuyFreeSpinsUI();
 
   if (!isFree) {
     const prev = state.balance;
@@ -568,6 +577,8 @@ async function doSpin() {
   state.lastWin  = totalWin;
   state.winLines = winLines;
 
+  const willShowOverlay = totalWin >= bet * 2;
+
   if (totalWin > 0) {
     applyWinEffects(winCells, winLines);
     const prev = state.balance;
@@ -579,7 +590,7 @@ async function doSpin() {
     animateNumber(elLastWin, prevSession, state.sessionWin, 650);
     spawnCoins(Math.min(8 + Math.floor(totalWin / bet * 2), 28));
     // Win overlay: trigger for any win ≥ 2× the bet
-    if (totalWin >= bet * 2) {
+    if (willShowOverlay) {
       setTimeout(() => showWinOverlay(totalWin, bet), 600);
     }
   }
@@ -606,6 +617,21 @@ async function doSpin() {
   elSpinBtn.disabled  = false;
   elBetMinus.disabled = state.freeSpins > 0;
   elBetPlus.disabled  = state.freeSpins > 0;
+  updateBuyFreeSpinsUI();
+
+  // Free Spins auto-play: if more remain, keep going without a manual click.
+  // If a win overlay is about to show, defer — hideWinOverlay() continues
+  // things once the player collects (or it auto-dismisses).
+  if (!willShowOverlay) scheduleAutoFreeSpin();
+}
+
+// Auto-advance to the next Free Spin (used for both naturally-triggered and
+// purchased Free Spins) — the player never has to click during the feature.
+function scheduleAutoFreeSpin() {
+  if (state.freeSpins <= 0) return;
+  setTimeout(() => {
+    if (!state.spinning && state.freeSpins > 0) doSpin();
+  }, 1000);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -691,6 +717,8 @@ function hideWinOverlay() {
   overlay.classList.add('closing');
   setTimeout(() => {
     overlay.classList.remove('open', 'closing', 'tier-big', 'tier-mega', 'tier-massive');
+    // Big win overlay just closed — resume Free Spins auto-play, if any remain
+    scheduleAutoFreeSpin();
   }, 500);
 }
 
@@ -709,10 +737,12 @@ function resetSession() {
   state.winCells   = new Set();
 
   clearWinEffects();
+  closeBuyFreeSpinsModal();
   elBalance.textContent = state.balance.toLocaleString();
   elLastWin.textContent = '0';
   updateBetDisplay();
   updateFreeSpinsDisplay();
+  updateBuyFreeSpinsUI();
   setStatus('Welcome to Fishing Fortune Reels · Press SPIN to cast! 🎣');
 }
 
@@ -722,22 +752,85 @@ function updateBetDisplay() {
   document.getElementById('bet-value-ctrl').textContent = bet.toLocaleString();
   elBetMinus.disabled = state.betIndex === 0 || state.freeSpins > 0;
   elBetPlus.disabled  = state.betIndex === CONFIG.betLevels.length - 1 || state.freeSpins > 0;
+  updateBuyFreeSpinsUI();
 }
 
 function updateFreeSpinsDisplay() {
   elFreeSpins.textContent = state.freeSpins;
   document.getElementById('free-spins-row').style.display = state.freeSpins > 0 ? 'flex' : 'none';
   updateSpinButton();
+  updateBuyFreeSpinsUI();
 }
 
 function updateSpinButton() {
   if (state.freeSpins > 0) {
-    elSpinBtn.textContent = '🎁 FREE SPIN';
+    elSpinBtn.textContent = '🌊 FREE SPIN';
     elSpinBtn.classList.add('free-spin-mode');
   } else {
     elSpinBtn.textContent = '⚡ SPIN';
     elSpinBtn.classList.remove('free-spin-mode');
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BUY FREE SPINS ("Feature Buy")
+// ═══════════════════════════════════════════════════════════════════════════
+
+function buyFreeSpinsCost() {
+  return CONFIG.betLevels[state.betIndex] * CONFIG.buyFreeSpins.multiplier;
+}
+
+// Keeps both buttons' displayed cost + enabled/disabled state in sync.
+// Call whenever bet, balance, freeSpins, or spinning state changes.
+function updateBuyFreeSpinsUI() {
+  const cost = buyFreeSpinsCost();
+  const costStr = cost.toLocaleString();
+  const disabled = state.spinning || state.freeSpins > 0 || state.balance < cost;
+
+  [elBuyFsBtnDesktop, elBuyFsBtnMobile].forEach(btn => {
+    if (!btn) return;
+    btn.disabled = disabled;
+    const costEl = btn.querySelector('.buy-fs-cost');
+    if (costEl) costEl.textContent = costStr;
+  });
+}
+
+function openBuyFreeSpinsModal() {
+  if (state.spinning || state.freeSpins > 0) return;
+  const cost = buyFreeSpinsCost();
+  if (state.balance < cost) {
+    setStatus('⚠️  Not enough coins to buy Free Spins.');
+    return;
+  }
+  if (elBuyFsCost) elBuyFsCost.textContent = cost.toLocaleString();
+  if (elBuyFsModal) elBuyFsModal.classList.add('open');
+  document.body.classList.add('buyfs-open');
+}
+
+function closeBuyFreeSpinsModal() {
+  if (elBuyFsModal) elBuyFsModal.classList.remove('open');
+  document.body.classList.remove('buyfs-open');
+}
+
+function confirmBuyFreeSpins() {
+  const cost = buyFreeSpinsCost();
+  if (state.spinning || state.freeSpins > 0 || state.balance < cost) {
+    closeBuyFreeSpinsModal();
+    updateBuyFreeSpinsUI();
+    return;
+  }
+  const prev = state.balance;
+  state.balance -= cost;
+  animateNumber(elBalance, prev, state.balance, 300);
+
+  state.freeSpins += CONFIG.buyFreeSpins.spins;
+  updateFreeSpinsDisplay();
+  setStatus(`🌊 Bought ${CONFIG.buyFreeSpins.spins} Free Spins for ${cost.toLocaleString()}!`);
+  closeBuyFreeSpinsModal();
+  updateBuyFreeSpinsUI();
+
+  // Auto-start — the player doesn't need to click, purchased Free Spins just run
+  scheduleAutoFreeSpin();
 }
 
 function buildPaytable() {
@@ -836,6 +929,15 @@ function wireEvents() {
   elPaytableBtn.addEventListener('click', openPaytable);
   elPaytableClose.addEventListener('click', closePaytable);
   elPaytableModal.addEventListener('click', e => { if (e.target === elPaytableModal) closePaytable(); });
+
+  // Buy Free Spins — desktop floating button, mobile drawer button, confirm popup
+  if (elBuyFsBtnDesktop) elBuyFsBtnDesktop.addEventListener('click', openBuyFreeSpinsModal);
+  if (elBuyFsBtnMobile)  elBuyFsBtnMobile.addEventListener('click', openBuyFreeSpinsModal);
+  if (elBuyFsConfirm)    elBuyFsConfirm.addEventListener('click', confirmBuyFreeSpins);
+  if (elBuyFsCancel)     elBuyFsCancel.addEventListener('click', closeBuyFreeSpinsModal);
+  if (elBuyFsModal) {
+    elBuyFsModal.addEventListener('click', e => { if (e.target === elBuyFsModal) closeBuyFreeSpinsModal(); });
+  }
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' && !elSpinBtn.disabled) { e.preventDefault(); doSpin(); }
   });
@@ -869,6 +971,13 @@ document.addEventListener('DOMContentLoaded', () => {
   elPaytableModal= document.getElementById('paytable-modal');
   elPaytableClose= document.getElementById('paytable-close');
 
+  elBuyFsBtnDesktop = document.getElementById('buy-fs-btn-desktop');
+  elBuyFsBtnMobile  = document.getElementById('buy-fs-btn-mobile');
+  elBuyFsModal      = document.getElementById('buy-fs-modal');
+  elBuyFsCost       = document.getElementById('buy-fs-cost');
+  elBuyFsConfirm    = document.getElementById('buy-fs-confirm');
+  elBuyFsCancel     = document.getElementById('buy-fs-cancel');
+
   buildReelGrid();
   buildPaytable();
 
@@ -876,6 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
   elLastWin.textContent = '0';
   updateBetDisplay();
   updateFreeSpinsDisplay();
+  updateBuyFreeSpinsUI();
   setStatus('Welcome to Fishing Fortune Reels · Press SPIN to cast! 🎣');
   wireEvents();
 });

@@ -71,6 +71,13 @@
   <img id="poseidon-mascot" src="assets/poseidon_mascot.png" alt="">
 </div>
 
+<!-- ░░░ BUY FREE SPINS — desktop floating button (left of the reel board) ░░░ -->
+<button id="buy-fs-btn-desktop" title="Buy Free Spins" aria-label="Buy Free Spins">
+  <span class="buy-fs-icon">🌊</span>
+  <span class="buy-fs-label">FREE<br>SPINS</span>
+  <span class="buy-fs-cost">0</span>
+</button>
+
 <!-- ░░░ MAIN APP ░░░ -->
 <div id="app">
 
@@ -128,7 +135,7 @@
   <!-- ── FREE SPINS INDICATOR (shown when active) ── -->
   <!-- free_spins_banner.png is used as background-image via CSS -->
   <div id="free-spins-row" style="display:none">
-    <span class="fs-label">🎁 FREE SPINS</span>
+    <span class="fs-label">🌊 FREE SPINS</span>
     <span id="free-spins-value" class="fs-count">0</span>
     <span class="fs-label">remaining</span>
   </div>
@@ -229,8 +236,27 @@
   <!-- Demo/Real toggle (mirrors the desktop DEMO/REAL button) -->
   <button id="mobile-demo-toggle">🎲 SPINS: DEMO</button>
 
+  <!-- Buy Free Spins (mirrors the desktop floating button) -->
+  <button id="buy-fs-btn-mobile">🌊 BUY 10 FREE SPINS — <span class="buy-fs-cost">0</span></button>
+
   <!-- Payline hint -->
   <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; Spacebar = Spin</p>
+</div>
+
+<!-- ░░░ BUY FREE SPINS — confirmation popup ░░░ -->
+<div id="buy-fs-modal" role="dialog" aria-modal="true" aria-label="Buy Free Spins">
+  <div id="buy-fs-panel">
+    <div id="buy-fs-title">🌊 BUY FREE SPINS</div>
+    <p id="buy-fs-desc">Instantly trigger <b>10 Free Spins</b> with a 2× win multiplier — no need to land Scatters.</p>
+    <div id="buy-fs-price-row">
+      <span id="buy-fs-price-label">COST</span>
+      <span id="buy-fs-price-value"><span id="buy-fs-cost">0</span> coins</span>
+    </div>
+    <div id="buy-fs-actions">
+      <button id="buy-fs-cancel">CANCEL</button>
+      <button id="buy-fs-confirm">CONFIRM</button>
+    </div>
+  </div>
 </div>
 
 <!-- ░░░ PAYTABLE MODAL ░░░ -->
@@ -342,6 +368,37 @@
     window.addEventListener('load', place);
     place();
     // Re-check periodically in case the board size changes (e.g. free spins banner)
+    setInterval(place, 500);
+  })();
+
+  // ── Buy Free Spins button — pinned to the LEFT of the reel board, mirrors Poseidon ──
+  (function () {
+    const btn   = document.getElementById('buy-fs-btn-desktop');
+    const board = document.getElementById('game-board');
+    if (!btn || !board) return;
+
+    const GAP = 70; // matches the gap used on the mascot's side for visual balance
+
+    function place() {
+      const rect      = board.getBoundingClientRect();
+      const btnWidth  = btn.offsetWidth;
+      const spaceLeft = rect.left;
+
+      // Not enough room beside the board (tablet/mobile) — hide it;
+      // the drawer button covers this case instead.
+      if (spaceLeft < btnWidth + GAP + 20) {
+        btn.style.display = 'none';
+        return;
+      }
+      btn.style.display   = 'flex';
+      btn.style.left      = (rect.left - GAP - btnWidth) + 'px';
+      btn.style.top       = (rect.top + rect.height / 2) + 'px';
+      btn.style.transform = 'translateY(-50%)';
+    }
+
+    window.addEventListener('resize', place);
+    window.addEventListener('load', place);
+    place();
     setInterval(place, 500);
   })();
 
