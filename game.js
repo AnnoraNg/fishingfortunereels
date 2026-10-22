@@ -41,38 +41,79 @@ const CONFIG = {
   // Extra cells kept above & below the visible window during spin
   stripExtra  : 6,
 
+  // ── Math model (tuned by simulation, ~95% RTP in REAL mode) ──────────
+  //   Base lines + scatter ≈ 69% · Free Spins ≈ 12% · Hold & Spin ≈ 15%
+  //   Scatter trigger ≈ 1 in 160 spins · Hold & Spin trigger ≈ 1 in 240 spins
   freeSpins: {
-    scatter3: { spins: 5,  multiplier: 2 },
-    scatter4: { spins: 8,  multiplier: 2 },
-    scatter5: { spins: 12, multiplier: 2 },
+    multiplier: 2,                 // applies to all wins during Free Spins
+    scatter3  : { spins: 8  },
+    scatter4  : { spins: 12 },
+    scatter5  : { spins: 15 },
+  },
+  scatterPays: { 3: 2, 4: 5, 5: 20 },   // × bet, paid anywhere
+
+  // "Buy Feature" — instantly purchase Free Spins instead of landing Scatters.
+  // Priced from the simulated value of 10 Free Spins (~22× bet) so the
+  // purchase returns ~96% — in line with the base game.
+  buyFreeSpins: {
+    multiplier : 23,   // cost = current bet × 23
+    spins      : 10,   // fixed number of Free Spins granted per purchase
   },
 
-  // "Buy Feature" — instantly purchase Free Spins instead of landing Scatters
-  buyFreeSpins: {
-    multiplier : 100,  // cost = current bet × 100
-    spins      : 10,   // fixed number of Free Spins granted per purchase
+  // ── Hold & Spin jackpot feature ─────────────────────────────────────────
+  // 6+ Bonus Coins anywhere (base game only) → coins lock, everything else
+  // clears, and the empty cells respin. Each new coin resets respins to 3.
+  // Final prize = sum of coin values + the highest jackpot reached by fill.
+  holdSpin: {
+    trigger     : 6,
+    respins     : 3,
+    landChance  : 0.055,  // per empty cell, per respin (REAL mode)
+    demoLandChance: 0.12, // boosted in DEMO mode so the showcase reaches a jackpot
+    // [multiplier of bet, relative weight]
+    coinValues  : [[1,30],[2,25],[3,18],[5,12],[8,8],[10,5],[15,2]],
+    // Checked highest-first; only the highest jackpot reached is paid.
+    jackpots    : [
+      { key:'grand', label:'GRAND', fill:15, mult:500 },
+      { key:'major', label:'MAJOR', fill:14, mult:100 },
+      { key:'minor', label:'MINOR', fill:12, mult:25  },
+      { key:'mini',  label:'MINI',  fill:10, mult:10  },
+    ],
+    // Progressive growth: each jackpot creeps up from its seed (mult × bet)
+    // by this fraction per second, capped, and resets to seed when won.
+    growthPerSec: 0.0002,
+    growthCap   : 0.25,
   },
 };
 
+// Bonus coin art (320px web copy of the 1024px source art)
+const BONUS_COIN_IMG = 'assets/bonus_coin_320.png';
+
 // ── Symbols ─────────────────────────────────────────────────────────────────
 const SYMBOLS = [
-  { id:'small_fish',         label:'Small Fish',     img:'assets/small_fish.png',         weight:22,  payouts:{3:0.2, 4:0.6, 5:1.2 } },
-  { id:'crab',               label:'Crab',           img:'assets/crab.png',               weight:18,  payouts:{3:0.25,4:0.7, 5:1.5 } },
-  { id:'anchor',             label:'Anchor',         img:'assets/anchor.png',             weight:16,  payouts:{3:0.3, 4:0.8, 5:1.8 } },
-  { id:'big_fish',           label:'Big Fish',       img:'assets/big_fish.png',           weight:14,  payouts:{3:0.4, 4:1.0, 5:2.5 } },
-  { id:'pearl_shell',        label:'Pearl Shell',    img:'assets/pearl_shell.png',        weight:11,  payouts:{3:0.5, 4:1.3, 5:3.0 } },
-  { id:'fishing_hook',       label:'Fishing Hook',   img:'assets/fishing_hook.png',       weight:9,   payouts:{3:0.6, 4:1.5, 5:4.0 } },
-  { id:'octopus',            label:'Octopus',        img:'assets/octopus.png',            weight:5,   payouts:{3:0.8, 4:2.5, 5:6.0 } },
-  { id:'treasure_chest',     label:'Treasure Chest', img:'assets/treasure_chest.png',     weight:3,   payouts:{3:1.5, 4:5.0, 5:12.0} },
+  { id:'small_fish',         label:'Small Fish',     img:'assets/small_fish.png',         weight:22,  payouts:{3:1.6, 4:4.8,  5:9.6 } },
+  { id:'crab',               label:'Crab',           img:'assets/crab.png',               weight:18,  payouts:{3:2,   4:5.6,  5:12  } },
+  { id:'anchor',             label:'Anchor',         img:'assets/anchor.png',             weight:16,  payouts:{3:2.4, 4:6.4,  5:14.4} },
+  { id:'big_fish',           label:'Big Fish',       img:'assets/big_fish.png',           weight:14,  payouts:{3:3.2, 4:8,    5:20  } },
+  { id:'pearl_shell',        label:'Pearl Shell',    img:'assets/pearl_shell.png',        weight:11,  payouts:{3:4,   4:10.4, 5:24  } },
+  { id:'fishing_hook',       label:'Fishing Hook',   img:'assets/fishing_hook.png',       weight:9,   payouts:{3:4.8, 4:12,   5:32  } },
+  { id:'octopus',            label:'Octopus',        img:'assets/octopus.png',            weight:5,   payouts:{3:6.4, 4:20,   5:48  } },
+  { id:'treasure_chest',     label:'Treasure Chest', img:'assets/treasure_chest.png',     weight:3,   payouts:{3:12,  4:40,   5:96  } },
   { id:'wild_golden_net',    label:'Wild',           img:'assets/wild_golden_net.png',    weight:1.5, payouts:null, isWild:true    },
   { id:'scatter_lucky_lure', label:'Scatter',        img:'assets/scatter_lucky_lure.png', weight:3,   payouts:null, isScatter:true },
+  // Bonus Coin — base game only (removed from the Free Spins pool)
+  { id:'bonus_coin',         label:'Bonus Coin',     img:BONUS_COIN_IMG,                  weight:13,  payouts:null, isCoin:true    },
 ];
 
-const SYMBOL_POOL = [];
+// Two weighted pools: base game (with Bonus Coins) and Free Spins (without)
+const SYMBOL_POOL = [], SYMBOL_POOL_FS = [];
 SYMBOLS.forEach(s => {
   const n = Math.round(s.weight * 10);
-  for (let i = 0; i < n; i++) SYMBOL_POOL.push(s.id);
+  for (let i = 0; i < n; i++) {
+    SYMBOL_POOL.push(s.id);
+    if (!s.isCoin) SYMBOL_POOL_FS.push(s.id);
+  }
 });
+
 
 const SYM_BY_ID = {};
 SYMBOLS.forEach(s => SYM_BY_ID[s.id] = s);
@@ -113,101 +154,117 @@ const state = {
   lastWin   : 0,
   winLines  : [],
   winCells  : new Set(),
-  spinCount : 0,    // tracks total spins for early win boost
+  spinCount : 0,    // tracks total spins (all spins, incl. free)
+  scriptCount: 0,   // paid base-game spins only — drives the demo script
+  coinMults : [],   // [col][row] = Bonus Coin multiplier (null if not a coin)
+  inHoldSpin: false,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // RNG
 // ═══════════════════════════════════════════════════════════════════════════
 
-function randomSymbol() {
-  return SYMBOL_POOL[Math.floor(Math.random() * SYMBOL_POOL.length)];
+function randomSymbol(isFree = false) {
+  const pool = isFree ? SYMBOL_POOL_FS : SYMBOL_POOL;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function generateGrid() {
+function generateGrid(isFree = false) {
   return Array.from({ length: CONFIG.reels }, () =>
-    Array.from({ length: CONFIG.rows }, () => randomSymbol())
+    Array.from({ length: CONFIG.rows }, () => randomSymbol(isFree))
   );
+}
+
+// ── Bonus Coin values (multiples of bet) ───────────────────────────────────
+const COIN_WEIGHT_TOTAL = CONFIG.holdSpin.coinValues.reduce((a, [, w]) => a + w, 0);
+function randomCoinMult() {
+  let r = Math.random() * COIN_WEIGHT_TOTAL;
+  for (const [m, w] of CONFIG.holdSpin.coinValues) { if ((r -= w) < 0) return m; }
+  return CONFIG.holdSpin.coinValues[0][0];
+}
+
+// [col][row] = coin multiplier, or null for non-coin cells
+function assignCoinValues(grid) {
+  return grid.map(col => col.map(id => SYM_BY_ID[id].isCoin ? randomCoinMult() : null));
+}
+
+function countCoins(grid) {
+  let n = 0;
+  grid.forEach(col => col.forEach(id => { if (SYM_BY_ID[id].isCoin) n++; }));
+  return n;
+}
+
+// Compact credit format for coin labels: 60,000 → 60K, 1,500,000 → 1.5M
+function shortAmount(v) {
+  if (v >= 1e6) return (+(v / 1e6).toFixed(v >= 1e7 ? 0 : 1)) + 'M';
+  if (v >= 1e3) return (+(v / 1e3).toFixed(v >= 1e4 ? 0 : 1)) + 'K';
+  return String(v);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DEMO SCRIPT — a fully fixed (non-probabilistic) sequence of moments.
 // No chance-based forcing, so wins never chain unpredictably. The whole
-// sequence repeats every SCRIPT_LENGTH spins (spin 20 plays out like spin 1,
-// spin 21 like spin 2, etc.) — free spins consume script positions too, so
-// the cycle naturally includes them.
+// sequence repeats every SCRIPT_LENGTH paid spins (spin 20 plays out like
+// spin 1, spin 21 like spin 2, etc.). Free Spins are skipped entirely: they
+// run on pure RNG and don't consume script positions.
 // ═══════════════════════════════════════════════════════════════════════════
 const SCRIPT_LENGTH = 19;
 
-function generateBoostedGrid() {
-  const grid = generateGrid();
+function generateBoostedGrid(isFree = false) {
+  const grid = generateGrid(isFree);
   if (!CONFIG.demoMode) return grid;  // real mode — pure weighted RNG, no forced wins
+  // Free Spins (natural or bought) are never scripted — pure RNG, and they
+  // don't advance the script, so it picks up where it left off afterwards.
+  if (isFree) return grid;
 
-  // Position within the repeating script (1-based, wraps every SCRIPT_LENGTH spins)
-  const n = ((state.spinCount - 1) % SCRIPT_LENGTH) + 1;
+  // Position within the repeating script (1-based, wraps every SCRIPT_LENGTH
+  // paid spins)
+  const n = ((state.scriptCount - 1) % SCRIPT_LENGTH) + 1;
 
-  // Spin 2 — BIG WIN: 5× Pearl Shell on the middle row (~3× bet)
-  if (n === 2) {
-    const mixA = ['small_fish','crab','small_fish','crab','small_fish'];
-    const mixB = ['anchor','big_fish','anchor','big_fish','anchor'];
+  // Helper: write a full 5×3 layout given as three rows (top, middle, bottom)
+  const fill = (top, mid, bot) => {
     for (let c = 0; c < CONFIG.reels; c++) {
-      grid[c][0] = mixA[c];
-      grid[c][1] = 'pearl_shell';
-      grid[c][2] = mixB[c];
+      grid[c][0] = top[c]; grid[c][1] = mid[c]; grid[c][2] = bot[c];
     }
     return grid;
-  }
+  };
 
-  // Spin 4 — small win: 3-of-a-kind Crab on the middle row only
-  if (n === 4) {
-    const mixA = ['anchor','fishing_hook','anchor','fishing_hook','anchor'];
-    const mixB = ['fishing_hook','anchor','fishing_hook','anchor','fishing_hook'];
-    for (let c = 0; c < CONFIG.reels; c++) {
-      grid[c][0] = mixA[c];
-      grid[c][2] = mixB[c];
-    }
-    grid[0][1] = grid[1][1] = grid[2][1] = 'crab';
-    grid[3][1] = 'big_fish';
-    grid[4][1] = 'small_fish';
-    return grid;
-  }
+  // Spin 2 — BIG WIN: 3× Pearl Shell on the middle row (4× bet)
+  if (n === 2) return fill(
+    ['small_fish','crab','small_fish','crab','small_fish'],
+    ['pearl_shell','pearl_shell','pearl_shell','anchor','crab'],
+    ['anchor','big_fish','anchor','big_fish','anchor']);
 
-  // Spin 5 — MEGA WIN: 5× Treasure Chest on the middle row (~12× bet)
-  if (n === 5) {
-    const mixA = ['crab','small_fish','crab','small_fish','crab'];
-    const mixB = ['anchor','fishing_hook','anchor','fishing_hook','anchor'];
-    for (let c = 0; c < CONFIG.reels; c++) {
-      grid[c][0] = mixA[c];
-      grid[c][1] = 'treasure_chest';
-      grid[c][2] = mixB[c];
-    }
-    return grid;
-  }
+  // Spin 4 — small win: 3× Small Fish on the middle row (1.6× bet)
+  if (n === 4) return fill(
+    ['anchor','fishing_hook','anchor','fishing_hook','anchor'],
+    ['small_fish','small_fish','small_fish','big_fish','crab'],
+    ['fishing_hook','anchor','fishing_hook','anchor','fishing_hook']);
 
-  // Spin 9 — MASSIVE WIN: whole grid fills with Treasure Chest, every
-  // payline hits 5-of-a-kind at once (~120× bet) — the big showcase moment
-  if (n === 9) {
-    for (let c = 0; c < CONFIG.reels; c++)
-      for (let r = 0; r < CONFIG.rows; r++)
-        grid[c][r] = 'treasure_chest';
-    return grid;
-  }
+  // Spin 5 — MEGA WIN: 5× Pearl Shell on the middle row (24× bet)
+  if (n === 5) return fill(
+    ['crab','small_fish','crab','small_fish','crab'],
+    ['pearl_shell','pearl_shell','pearl_shell','pearl_shell','pearl_shell'],
+    ['anchor','fishing_hook','anchor','fishing_hook','anchor']);
+
+  // Spin 9 — MASSIVE WIN: 5× Treasure Chest on the middle row (96× bet)
+  if (n === 9) return fill(
+    ['crab','small_fish','crab','small_fish','crab'],
+    ['treasure_chest','treasure_chest','treasure_chest','treasure_chest','treasure_chest'],
+    ['anchor','fishing_hook','anchor','fishing_hook','anchor']);
 
   // Spin 14 — Scatter trigger: exactly 3 Scatters spread across the top row
-  if (n === 14) {
-    const midFill = ['small_fish','crab','anchor','big_fish','fishing_hook'];
-    const botFill = ['anchor','big_fish','fishing_hook','small_fish','crab'];
-    for (let c = 0; c < CONFIG.reels; c++) {
-      grid[c][1] = midFill[c];
-      grid[c][2] = botFill[c];
-    }
-    grid[0][0] = 'scatter_lucky_lure';
-    grid[2][0] = 'scatter_lucky_lure';
-    grid[4][0] = 'scatter_lucky_lure';
-    grid[1][0] = 'octopus';
-    grid[3][0] = 'octopus';
-    return grid;
-  }
+  if (n === 14) return fill(
+    ['scatter_lucky_lure','octopus','scatter_lucky_lure','octopus','scatter_lucky_lure'],
+    ['small_fish','crab','anchor','big_fish','fishing_hook'],
+    ['anchor','big_fish','fishing_hook','small_fish','crab']);
+
+  // Spin 17 — Hold & Spin trigger: exactly 6 Bonus Coins (respins use the
+  // boosted demo land chance so the showcase usually reaches a jackpot)
+  if (n === 17) return fill(
+    ['bonus_coin','crab','bonus_coin','anchor','bonus_coin'],
+    ['small_fish','bonus_coin','big_fish','bonus_coin','fishing_hook'],
+    ['anchor','small_fish','bonus_coin','crab','big_fish']);
 
   // Every other spin in the script: no forcing — natural weighted RNG,
   // same odds as real mode. Losses stay losses; any win here is pure chance.
@@ -222,7 +279,7 @@ function evalPayline(grid, payline) {
   let baseId = null, count = 0;
   for (let col = 0; col < CONFIG.reels; col++) {
     const sym = SYM_BY_ID[grid[col][payline[col]]];
-    if (sym.isScatter) break;
+    if (sym.isScatter || sym.isCoin) break;   // Scatter & Bonus Coin never pay on lines
     if (sym.isWild)    { count++; continue; }
     if (!baseId)               { baseId = sym.id; count++; }
     else if (sym.id === baseId)  count++;
@@ -259,13 +316,13 @@ function evaluateWins(grid, bet, multiplier = 1) {
   let bonusSpins = 0, triggerScatter = false;
   if (sc >= 3) {
     triggerScatter = true;
-    const scPay  = { 3:2,  4:5,  5:20 };
+    const scPay  = CONFIG.scatterPays;
     const scSpin = { 3:CONFIG.freeSpins.scatter3.spins,
                      4:CONFIG.freeSpins.scatter4.spins,
                      5:CONFIG.freeSpins.scatter5.spins };
     const k = Math.min(sc, 5);
-    totalWin  += Math.floor(bet * (scPay[k]||20) * multiplier);
-    bonusSpins = scSpin[k] || 5;
+    totalWin  += Math.floor(bet * scPay[k] * multiplier);
+    bonusSpins = scSpin[k];
     scCells.forEach(([c,r]) => winCells.add(`${c},${r}`));
     winLines.push({ line:'SCATTER', symbolId:'scatter_lucky_lure', matchCount:sc,
                     payout:scPay[k], amount:Math.floor(bet*scPay[k]*multiplier) });
@@ -312,7 +369,7 @@ let reelCells = [];
  * values; once it would reach 0 we recycle the bottom cell to the top
  * (prepend + subtract one cellH from yOff) to keep the strip infinite.
  */
-function spinReel(colIndex, finalSymbols, stopDelay) {
+function spinReel(colIndex, finalSymbols, stopDelay, finalCoinMults = [], isFree = false) {
   const container = reelCols[colIndex];
 
   // Measure cell height from container  (height = rows * cellH, no gaps)
@@ -338,7 +395,7 @@ function spinReel(colIndex, finalSymbols, stopDelay) {
     const cell = document.createElement('div');
     cell.className = 'cell';
     const img = document.createElement('img');
-    const sym = SYM_BY_ID[randomSymbol()];
+    const sym = SYM_BY_ID[randomSymbol(isFree)];
     img.src = sym.img;
     img.alt = sym.label;
     img.draggable = false;
@@ -373,7 +430,7 @@ function spinReel(colIndex, finalSymbols, stopDelay) {
     while (yOff >= 0) {
       yOff -= cellH;
       const last = cells.pop();
-      last.querySelector('img').src = SYM_BY_ID[randomSymbol()].img;
+      last.querySelector('img').src = SYM_BY_ID[randomSymbol(isFree)].img;
       strip.prepend(last);
       cells.unshift(last);
     }
@@ -395,7 +452,7 @@ function spinReel(colIndex, finalSymbols, stopDelay) {
       while (yOff >= 0) {
         yOff -= cellH;
         const last = cells.pop();
-        last.querySelector('img').src = SYM_BY_ID[randomSymbol()].img;
+        last.querySelector('img').src = SYM_BY_ID[randomSymbol(isFree)].img;
         strip.prepend(last);
         cells.unshift(last);
       }
@@ -403,9 +460,7 @@ function spinReel(colIndex, finalSymbols, stopDelay) {
       // Place the final symbols in cells[0], [1], [2]
       // They will become visible as the strip eases to translateY(0)
       finalSymbols.forEach((symId, row) => {
-        const sym = SYM_BY_ID[symId];
-        cells[row].querySelector('img').src = sym.img;
-        cells[row].querySelector('img').alt = sym.label;
+        setCellSymbol(cells[row], symId, finalCoinMults[row]);
       });
 
       // Ease yOff → 0  (remaining scroll distance is -yOff, always positive)
@@ -456,6 +511,28 @@ function spinReel(colIndex, finalSymbols, stopDelay) {
     }, stopDelay);
   });
 }
+
+// Puts a symbol into a cell; Bonus Coins also get their credit value label.
+function setCellSymbol(cell, symId, coinMult = null) {
+  const sym = SYM_BY_ID[symId];
+  const img = cell.querySelector('img');
+  img.src = sym.img;
+  img.alt = sym.label;
+  cell.classList.remove('hs-empty');
+  let lbl = cell.querySelector('.coin-value');
+  if (sym.isCoin && coinMult != null) {
+    if (!lbl) {
+      lbl = document.createElement('span');
+      lbl.className = 'coin-value';
+      cell.appendChild(lbl);
+    }
+    lbl.textContent = shortAmount(coinMult * CONFIG.betLevels[state.betIndex]);
+  } else if (lbl) {
+    lbl.remove();
+  }
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // ═══════════════════════════════════════════════════════════════════════════
 // UI ANIMATION HELPERS
@@ -527,7 +604,7 @@ function spawnBubbles() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function doSpin() {
-  if (state.spinning) return;
+  if (state.spinning || state.inHoldSpin) return;
 
   const isFree = state.freeSpins > 0;
   const bet    = CONFIG.betLevels[state.betIndex];
@@ -554,8 +631,10 @@ async function doSpin() {
 
   // Outcome — use boosted grid for early spins
   state.spinCount++;
-  const grid = generateBoostedGrid();
+  if (!isFree) state.scriptCount++;
+  const grid = generateBoostedGrid(isFree);
   state.grid = grid;
+  state.coinMults = assignCoinValues(grid);
 
   // Spin all reels; left reel stops first, right reel stops last
   // Timing is divided by the speed multiplier so higher speeds finish faster
@@ -565,19 +644,24 @@ async function doSpin() {
   const firstStop = lastStop - (CONFIG.reels - 1) * stagger;
   const ps = [];
   for (let col = 0; col < CONFIG.reels; col++) {
-    ps.push(spinReel(col, grid[col], firstStop + col * stagger));
+    ps.push(spinReel(col, grid[col], firstStop + col * stagger, state.coinMults[col], isFree));
   }
   await Promise.all(ps);
 
   // Evaluate
-  const mult = isFree ? CONFIG.freeSpins.scatter3.multiplier : 1;
+  const mult = isFree ? CONFIG.freeSpins.multiplier : 1;
   const { totalWin, winLines, winCells, bonusSpins, triggerScatter } =
     evaluateWins(grid, bet, mult);
 
   state.lastWin  = totalWin;
   state.winLines = winLines;
 
-  const willShowOverlay = totalWin >= bet * 2;
+  // Hold & Spin — base game only (coins aren't in the Free Spins pool anyway)
+  const triggerHold = !isFree && countCoins(grid) >= CONFIG.holdSpin.trigger;
+
+  // When Hold & Spin follows, skip the line-win overlay — the feature's own
+  // celebration comes at the end instead.
+  const willShowOverlay = totalWin >= bet * 2 && !triggerHold;
 
   if (totalWin > 0) {
     applyWinEffects(winCells, winLines);
@@ -613,6 +697,17 @@ async function doSpin() {
   }
 
   updateSpinButton();
+
+  if (triggerHold) {
+    setStatus(`🪙 ${countCoins(grid)} Bonus Coins! HOLD & SPIN!` +
+      (totalWin > 0 ? `  Win: +${totalWin.toLocaleString()}` : ''));
+    state.inHoldSpin = true;     // keeps SPIN / bet / buy locked
+    state.spinning   = false;
+    updateBuyFreeSpinsUI();
+    setTimeout(() => runHoldSpin(bet), 1300);
+    return;
+  }
+
   state.spinning = false;
   elSpinBtn.disabled  = false;
   elBetMinus.disabled = state.freeSpins > 0;
@@ -630,8 +725,154 @@ async function doSpin() {
 function scheduleAutoFreeSpin() {
   if (state.freeSpins <= 0) return;
   setTimeout(() => {
-    if (!state.spinning && state.freeSpins > 0) doSpin();
+    if (!state.spinning && !state.inHoldSpin && state.freeSpins > 0) doSpin();
   }, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// HOLD & SPIN (jackpot feature)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Progressive jackpots: value = seed (mult × bet) × (1 + growth)
+const jackpotGrowth = { grand: 0, major: 0, minor: 0, mini: 0 };
+
+function jackpotValue(key, bet = CONFIG.betLevels[state.betIndex]) {
+  const jp = CONFIG.holdSpin.jackpots.find(j => j.key === key);
+  return Math.floor(jp.mult * bet * (1 + jackpotGrowth[key]));
+}
+
+function renderJackpots() {
+  CONFIG.holdSpin.jackpots.forEach(({ key }) => {
+    const str = jackpotValue(key).toLocaleString();
+    const a = document.getElementById('jp-' + key);
+    const b = document.getElementById('mjp-' + key);
+    if (a) a.textContent = str;
+    if (b) b.textContent = str;
+  });
+}
+
+function startJackpotTickers() {
+  const TICK = 120;
+  const { growthPerSec, growthCap } = CONFIG.holdSpin;
+  renderJackpots();
+  setInterval(() => {
+    Object.keys(jackpotGrowth).forEach(k => {
+      jackpotGrowth[k] = Math.min(growthCap, jackpotGrowth[k] + growthPerSec * TICK / 1000);
+    });
+    renderJackpots();
+  }, TICK);
+}
+
+function setHoldSpinPanel(respins, filled, total) {
+  const panel = document.getElementById('hs-panel');
+  if (!panel) return;
+  const next = [...CONFIG.holdSpin.jackpots].reverse().find(j => filled < j.fill);
+  document.getElementById('hs-respins').innerHTML =
+    Array.from({ length: CONFIG.holdSpin.respins }, (_, i) =>
+      `<span class="hs-dot${i < respins ? ' on' : ''}"></span>`).join('');
+  document.getElementById('hs-count').textContent = `${filled} / 15`;
+  document.getElementById('hs-total').textContent = total.toLocaleString();
+  document.getElementById('hs-next').textContent = next
+    ? `${next.fill} coins = ${next.label}` : 'GRAND reached!';
+}
+
+async function runHoldSpin(bet) {
+  const hs     = CONFIG.holdSpin;
+  const chance = CONFIG.demoMode ? hs.demoLandChance : hs.landChance;
+  const sm     = SPEED_LEVELS[state.speedIndex].mult;
+  const locked = state.coinMults.map(col => col.slice());   // [c][r] mult|null
+
+  clearWinEffects();
+  document.body.classList.add('hold-spin-active');
+
+  // Clear every non-coin cell; lock the coins
+  let filled = 0;
+  for (let c = 0; c < CONFIG.reels; c++) {
+    for (let r = 0; r < CONFIG.rows; r++) {
+      const cell = reelCells[c][r];
+      if (locked[c][r] != null) { cell.classList.add('hs-locked'); filled++; }
+      else {
+        cell.classList.add('hs-empty');
+        const lbl = cell.querySelector('.coin-value');
+        if (lbl) lbl.remove();
+      }
+    }
+  }
+  const sumCoins = () => locked.flat().reduce((a, m) => a + (m || 0) * bet, 0);
+
+  let respins = hs.respins;
+  setHoldSpinPanel(respins, filled, sumCoins());
+  await sleep(1200 / sm);
+
+  while (respins > 0 && filled < 15) {
+    respins--;
+    setHoldSpinPanel(respins, filled, sumCoins());
+    setStatus(`🪙 HOLD & SPIN · respins left: ${respins}`);
+
+    const empties = [];
+    for (let c = 0; c < CONFIG.reels; c++)
+      for (let r = 0; r < CONFIG.rows; r++)
+        if (locked[c][r] == null) empties.push([c, r]);
+
+    empties.forEach(([c, r]) => reelCells[c][r].classList.add('hs-rolling'));
+    await sleep(800 / sm);
+
+    let landed = 0;
+    for (const [c, r] of empties) {
+      const cell = reelCells[c][r];
+      cell.classList.remove('hs-rolling');
+      if (Math.random() < chance) {
+        locked[c][r] = randomCoinMult();
+        setCellSymbol(cell, 'bonus_coin', locked[c][r]);
+        cell.classList.add('hs-locked', 'hs-new');
+        setTimeout(() => cell.classList.remove('hs-new'), 600);
+        landed++;
+        await sleep(140 / sm);
+      }
+    }
+    if (landed) {
+      filled += landed;
+      respins = hs.respins;          // any new coin resets the respins
+      spawnCoins(6 + landed * 2);
+    }
+    setHoldSpinPanel(respins, filled, sumCoins());
+    await sleep(650 / sm);
+  }
+
+  // ── Payout: coin values + highest jackpot reached ──
+  const coinTotal = sumCoins();
+  const jp = hs.jackpots.find(j => filled >= j.fill);   // highest first
+  let jpAmount = 0;
+  if (jp) {
+    jpAmount = jackpotValue(jp.key, bet);
+    jackpotGrowth[jp.key] = 0;                         // reset to seed
+    renderJackpots();
+    document.querySelectorAll(`.jp-panel.${jp.key}, .mjp-${jp.key}`)
+      .forEach(el => { el.classList.add('jp-won'); setTimeout(() => el.classList.remove('jp-won'), 4000); });
+  }
+  const total = coinTotal + jpAmount;
+
+  const prev = state.balance;
+  state.balance += total;
+  animateNumber(elBalance, prev, state.balance, 900);
+  const prevSession = state.sessionWin;
+  state.sessionWin += total;
+  animateNumber(elLastWin, prevSession, state.sessionWin, 700);
+
+  setStatus(`🪙 Hold & Spin complete · ${filled} coins` +
+    (jp ? ` · ${jp.label} JACKPOT +${jpAmount.toLocaleString()}` : '') +
+    ` · Win +${total.toLocaleString()}`);
+
+  await sleep(500);
+  document.body.classList.remove('hold-spin-active');
+  state.inHoldSpin = false;
+  elSpinBtn.disabled  = false;
+  elBetMinus.disabled = state.freeSpins > 0 || state.betIndex === 0;
+  elBetPlus.disabled  = state.freeSpins > 0 || state.betIndex === CONFIG.betLevels.length - 1;
+  updateBuyFreeSpinsUI();
+
+  // Celebration — closing it also resumes any Free Spins won on the same spin
+  showWinOverlay(total, bet, jp ? `${jp.label} JACKPOT!` : 'HOLD & SPIN WIN!');
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -643,7 +884,7 @@ function setStatus(msg) { elStatus.textContent = msg; }
 // ── Win Celebration Overlay ───────────────────────────────────────────────
 let _winOverlayTimer = null;
 
-function showWinOverlay(amount, bet) {
+function showWinOverlay(amount, bet, labelOverride = null) {
   const overlay    = document.getElementById('win-overlay');
   const tierLabel  = document.getElementById('win-tier-label');
   const amountEl   = document.getElementById('win-overlay-amount');
@@ -667,7 +908,7 @@ function showWinOverlay(amount, bet) {
   // Apply tier class
   overlay.className = '';
   overlay.classList.add('open', tier);
-  tierLabel.textContent = label;
+  tierLabel.textContent = labelOverride || label;
   amountEl.textContent  = '0';
 
   // Spawn particles
@@ -725,13 +966,17 @@ function hideWinOverlay() {
 // Full session reset — used when switching between Demo and Real mode so
 // neither mode's progress/balance carries over into the other.
 function resetSession() {
-  if (state.spinning) return;   // don't reset mid-spin
+  if (state.spinning || state.inHoldSpin) return;   // don't reset mid-spin / mid-feature
 
   state.balance    = CONFIG.startingBalance;
   state.betIndex   = CONFIG.defaultBetIndex;
   state.freeSpins  = 0;
   state.sessionWin = 0;
   state.spinCount  = 0;
+  state.scriptCount = 0;
+  state.coinMults   = [];
+  Object.keys(jackpotGrowth).forEach(k => jackpotGrowth[k] = 0);
+  renderJackpots();
   state.lastWin    = 0;
   state.winLines   = [];
   state.winCells   = new Set();
@@ -753,6 +998,7 @@ function updateBetDisplay() {
   elBetMinus.disabled = state.betIndex === 0 || state.freeSpins > 0;
   elBetPlus.disabled  = state.betIndex === CONFIG.betLevels.length - 1 || state.freeSpins > 0;
   updateBuyFreeSpinsUI();
+  renderJackpots();   // jackpots are multiples of the current bet
 }
 
 function updateFreeSpinsDisplay() {
@@ -785,7 +1031,7 @@ function buyFreeSpinsCost() {
 function updateBuyFreeSpinsUI() {
   const cost = buyFreeSpinsCost();
   const costStr = cost.toLocaleString();
-  const disabled = state.spinning || state.freeSpins > 0 || state.balance < cost;
+  const disabled = state.spinning || state.inHoldSpin || state.freeSpins > 0 || state.balance < cost;
 
   [elBuyFsBtnDesktop, elBuyFsBtnMobile].forEach(btn => {
     if (!btn) return;
@@ -796,7 +1042,7 @@ function updateBuyFreeSpinsUI() {
 }
 
 function openBuyFreeSpinsModal() {
-  if (state.spinning || state.freeSpins > 0) return;
+  if (state.spinning || state.inHoldSpin || state.freeSpins > 0) return;
   const cost = buyFreeSpinsCost();
   if (state.balance < cost) {
     setStatus('⚠️  Not enough coins to buy Free Spins.');
@@ -814,7 +1060,7 @@ function closeBuyFreeSpinsModal() {
 
 function confirmBuyFreeSpins() {
   const cost = buyFreeSpinsCost();
-  if (state.spinning || state.freeSpins > 0 || state.balance < cost) {
+  if (state.spinning || state.inHoldSpin || state.freeSpins > 0 || state.balance < cost) {
     closeBuyFreeSpinsModal();
     updateBuyFreeSpinsUI();
     return;
@@ -835,9 +1081,14 @@ function confirmBuyFreeSpins() {
 
 function buildPaytable() {
   document.getElementById('paytable-body').innerHTML = SYMBOLS.map(s => {
+    const fs = CONFIG.freeSpins, sp = CONFIG.scatterPays;
     const pay = s.isWild ? 'Substitutes for all regular symbols'
               : s.isScatter
-                ? '3 anywhere: 2× + 5 Free Spins<br>4 anywhere: 5× + 8 Free Spins<br>5 anywhere: 20× + 12 Free Spins'
+                ? `3 anywhere: <b>${sp[3]}×</b> + ${fs.scatter3.spins} Free Spins<br>` +
+                  `4 anywhere: <b>${sp[4]}×</b> + ${fs.scatter4.spins} Free Spins<br>` +
+                  `5 anywhere: <b>${sp[5]}×</b> + ${fs.scatter5.spins} Free Spins`
+              : s.isCoin
+                ? `${CONFIG.holdSpin.trigger}+ anywhere triggers <b>Hold &amp; Spin</b><br>Each coin shows a prize of 1×–15× bet`
                 : Object.entries(s.payouts).map(([n,m]) => `${n}×: <b>${m}×</b> bet`).join('<br>');
     return `<tr>
       <td><img src="${s.img}" alt="${s.label}" class="pt-icon"></td>
@@ -864,7 +1115,7 @@ function buildReelGrid() {
       const cell = document.createElement('div');
       cell.className = 'cell';
       const img = document.createElement('img');
-      const sym = SYM_BY_ID[randomSymbol()];
+      const sym = SYM_BY_ID[randomSymbol(true)];   // no coins on the idle board (they'd have no value)
       img.src = sym.img;
       img.alt = sym.label;
       img.draggable = false;
@@ -918,9 +1169,11 @@ function wireEvents() {
     elBoard.style.cursor = 'pointer';
   }
   elBetMinus.addEventListener('click', () => {
+    if (state.spinning || state.inHoldSpin) return;
     if (state.betIndex > 0) { state.betIndex--; updateBetDisplay(); }
   });
   elBetPlus.addEventListener('click', () => {
+    if (state.spinning || state.inHoldSpin) return;
     if (state.betIndex < CONFIG.betLevels.length - 1) { state.betIndex++; updateBetDisplay(); }
   });
   function openPaytable()  { elPaytableModal.classList.add('open');    document.body.classList.add('paytable-open'); }
@@ -946,7 +1199,7 @@ function wireEvents() {
   const maxBetBtn = document.getElementById('max-bet-btn');
   if (maxBetBtn) {
     maxBetBtn.addEventListener('click', () => {
-      if (!state.spinning && state.freeSpins === 0) {
+      if (!state.spinning && !state.inHoldSpin && state.freeSpins === 0) {
         state.betIndex = CONFIG.betLevels.length - 1;
         updateBetDisplay();
       }
@@ -980,6 +1233,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   buildReelGrid();
   buildPaytable();
+  startJackpotTickers();
 
   elBalance.textContent = state.balance.toLocaleString();
   elLastWin.textContent = '0';

@@ -60,8 +60,8 @@
       <button class="picker-opt" data-src="assets/profile_2.png" aria-label="Avatar 2"><img src="assets/profile_2.png" draggable="false"></button>
       <button class="picker-opt" data-src="assets/profile_3.png" aria-label="Avatar 3"><img src="assets/profile_3.png" draggable="false"></button>
       <button class="picker-opt" data-src="assets/profile_4.png" aria-label="Avatar 4"><img src="assets/profile_4.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_5.png" aria-label="Avatar 4"><img src="assets/profile_5.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_6.png" aria-label="Avatar 5"><img src="assets/profile_6.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_5.png" aria-label="Avatar 5"><img src="assets/profile_5.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_6.png" aria-label="Avatar 6"><img src="assets/profile_6.png" draggable="false"></button>
     </div>
   </div>
 </div>
@@ -125,6 +125,17 @@
     <!-- 5 × 3 reel grid — built by game.js -->
     <div id="reel-grid"></div>
 
+    <!-- Hold & Spin status ribbon (visible only during the feature) -->
+    <div id="hs-panel" aria-live="polite">
+      <div id="hs-title">🪙 HOLD &amp; SPIN</div>
+      <div id="hs-stats">
+        <span class="hs-stat"><span class="hs-k">RESPINS</span><span id="hs-respins"></span></span>
+        <span class="hs-stat"><span class="hs-k">COINS</span><span id="hs-count" class="hs-v">0 / 15</span></span>
+        <span class="hs-stat"><span class="hs-k">PRIZE</span><span id="hs-total" class="hs-v">0</span></span>
+      </div>
+      <div id="hs-next"></div>
+    </div>
+
   </main>
 
   <!-- ── STATUS BAR ── -->
@@ -183,7 +194,7 @@
   </div>
 
   <!-- ── PAYLINE HINT ── -->
-  <div id="payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; Spacebar = Spin</div>
+  <div id="payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; 6+ Coins = Hold &amp; Spin &nbsp;·&nbsp; Spacebar = Spin</div>
 
 </div><!-- /#app -->
 
@@ -240,7 +251,7 @@
   <button id="buy-fs-btn-mobile">🌊 BUY 10 FREE SPINS — <span class="buy-fs-cost">0</span></button>
 
   <!-- Payline hint -->
-  <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; Spacebar = Spin</p>
+  <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; 6+ Coins = Hold &amp; Spin &nbsp;·&nbsp; Spacebar = Spin</p>
 </div>
 
 <!-- ░░░ BUY FREE SPINS — confirmation popup ░░░ -->
@@ -268,6 +279,25 @@
     </div>
     <p class="pt-note">Payouts are multipliers of total bet &nbsp;·&nbsp; Wild substitutes all regular symbols &nbsp;·&nbsp; Scatter pays anywhere</p>
     <div id="paytable-scroll">
+      <div id="pt-features">
+        <h3>FEATURES</h3>
+        <div class="pt-feature">
+          <b>🌊 Free Spins</b>
+          <p>3 / 4 / 5 Lucky Lure Scatters anywhere award 8 / 12 / 15 Free Spins. All wins pay 2×. Scatters can retrigger. You can also buy 10 Free Spins for 23× bet.</p>
+        </div>
+        <div class="pt-feature">
+          <b>🪙 Hold &amp; Spin</b>
+          <p>Land 6 or more Bonus Coins anywhere in the base game. Coins lock in place, everything else clears, and you get 3 respins. Every new coin locks and resets respins to 3. When respins run out, you win every coin's value plus the highest jackpot reached.</p>
+          <table class="pt-jp-table">
+            <tr><th>Coins on grid</th><th>Jackpot</th><th>Seed</th></tr>
+            <tr><td>10</td><td class="jp-mini-t">MINI</td><td>10× bet</td></tr>
+            <tr><td>12</td><td class="jp-minor-t">MINOR</td><td>25× bet</td></tr>
+            <tr><td>14</td><td class="jp-major-t">MAJOR</td><td>100× bet</td></tr>
+            <tr><td>15 (full)</td><td class="jp-grand-t">GRAND</td><td>500× bet</td></tr>
+          </table>
+          <p class="pt-small">Jackpots scale with your bet and grow slowly over time until won.</p>
+        </div>
+      </div>
       <table id="paytable-table">
         <thead>
           <tr><th>Symbol</th><th>Name</th><th>Payouts</th></tr>
@@ -289,27 +319,6 @@
 </div>
 
 <script src="game.js"></script>
-<script>
-  // ── Jackpot ticker — slowly growing values (syncs desktop bar + mobile drawer) ──
-  (function () {
-    const tickers = [
-      { id: 'jp-grand', mobileId: 'mjp-grand', val: 5900000,  rate: 31  },
-      { id: 'jp-major', mobileId: 'mjp-major', val: 1000000,  rate: 9   },
-      { id: 'jp-minor', mobileId: 'mjp-minor', val: 280000,   rate: 3   },
-      { id: 'jp-mini',  mobileId: 'mjp-mini',  val: 50000,    rate: 1   },
-    ];
-    tickers.forEach(t => {
-      const el       = document.getElementById(t.id);
-      const mobileEl = document.getElementById(t.mobileId);
-      setInterval(() => {
-        t.val += t.rate;
-        const str = t.val.toLocaleString();
-        if (el)       el.textContent       = str;
-        if (mobileEl) mobileEl.textContent = str;
-      }, 120);
-    });
-  })();
-</script>
 
 <script>
   // ── Profile pic picker ──
@@ -445,7 +454,7 @@
 
     function toggle() {
       if (typeof CONFIG === 'undefined') return;
-      if (typeof state !== 'undefined' && state.spinning) return; // ignore mid-spin
+      if (typeof state !== 'undefined' && (state.spinning || state.inHoldSpin)) return; // ignore mid-spin / mid-feature
       CONFIG.demoMode = !CONFIG.demoMode;
       render();
       // Neither mode's progress should carry into the other — fresh session each time
@@ -491,21 +500,7 @@
       });
     }
 
-    // Mobile speed toggle — cycles ×1 → ×2 → ×4
-    const mobileSpeedBtn  = document.getElementById('mobile-speed-toggle');
-    const desktopSpeedBtn = document.getElementById('speed-toggle-btn');
-    const speedLabels = ['×1', '×2', '×4'];
-    let speedIdx = 0;
-    if (mobileSpeedBtn) {
-      mobileSpeedBtn.addEventListener('click', () => {
-        speedIdx = (speedIdx + 1) % speedLabels.length;
-        const label = speedLabels[speedIdx];
-        mobileSpeedBtn.textContent  = `⚡ SPEED: ${label}`;
-        if (desktopSpeedBtn) desktopSpeedBtn.textContent = `⚡ ${label}`;
-        // Sync into game.js state if available
-        if (typeof state !== 'undefined') state.speedIndex = speedIdx;
-      });
-    }
+    // Mobile speed toggle is wired in game.js (wireEvents) — single source of truth
   })();
 </script>
 
