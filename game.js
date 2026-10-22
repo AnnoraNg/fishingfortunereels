@@ -674,7 +674,7 @@ async function doSpin() {
   state.spinning = true;
   reelStoppers = [];
   clearWinEffects();
-  setStatus(isFree ? `🌊 Free Spin! (${state.freeSpins} remaining)` : '🎣 Reeling in…');
+  if (!isFree) setStatus('🎣 Reeling in…');
   // SPIN stays clickable during the spin — it acts as STOP
   elBetMinus.disabled = elBetPlus.disabled = true;
   elSpinBtn.classList.add('is-stop');
@@ -688,6 +688,10 @@ async function doSpin() {
   } else {
     state.freeSpins--;
     updateFreeSpinsDisplay();
+    // The FREE SPINS banner already shows how many are left, so the status
+    // bar shows progress instead (two "remaining" counts read as off-by-one)
+    const nth = state.fsPlayed + 1, total = state.fsPlayed + 1 + state.freeSpins;
+    setStatus(`🌊 Free Spin ${nth} of ${total} · wins pay ${CONFIG.freeSpins.multiplier}×`);
   }
 
   // Outcome — use boosted grid for early spins
@@ -757,7 +761,7 @@ async function doSpin() {
     const n = winLines.length;
     setStatus(`✨ Win +${totalWin.toLocaleString()} · ${n} line${n > 1 ? 's' : ''}`);
   } else if (isFree) {
-    setStatus(state.freeSpins > 0 ? `Free spin · no win · ${state.freeSpins} left` : '🏁 Free Spins complete!');
+    setStatus(state.freeSpins > 0 ? 'Free spin · no win this time' : '🏁 Free Spins complete!');
   } else {
     setStatus('No win this time. Cast again!');
   }
