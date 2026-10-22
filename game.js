@@ -773,7 +773,7 @@ function setHoldSpinPanel(respins, filled, total) {
   document.getElementById('hs-count').textContent = `${filled} / 15`;
   document.getElementById('hs-total').textContent = total.toLocaleString();
   document.getElementById('hs-next').textContent = next
-    ? `${next.fill} coins = ${next.label}` : 'GRAND reached!';
+    ? `${next.label} @ ${next.fill}` : 'GRAND!';
 }
 
 async function runHoldSpin(bet) {

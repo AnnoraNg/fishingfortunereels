@@ -1809,3 +1809,60 @@ body.hold-spin-active #hs-panel { display: block; animation: hsIn 0.4s ease-out;
 
 /* Title steps aside for the Hold & Spin ribbon (keeps layout from jumping) */
 body.hold-spin-active #game-title { visibility: hidden; }
+
+/* ── Hold & Spin ribbon art (assets/hold_spin_banner_900.png) ──────────
+   The gold ribbon carries the title; the stats sit in a slim blue strip
+   that overlaps the top edge of the reel frame. */
+#hs-panel {
+  background: none; border: none; box-shadow: none;
+  padding: 0;
+  width: min(560px, 96vw); min-width: 0;
+  transform: translate(-50%, -84%);
+}
+#hs-title {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1416 / 380;
+  background: url('assets/hold_spin_banner_900.png') center / contain no-repeat;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+}
+#hs-title span {
+  position: absolute; left: 50%; top: 42%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-family: 'Bangers', cursive;
+  font-size: clamp(1.3rem, 5.2vw, 2.4rem);
+  letter-spacing: 0.1em;
+  color: #0b3a8c;
+  text-shadow: 0 1px 0 #fff6c8, 0 -1px 0 rgba(120,70,0,0.55), 0 0 8px rgba(255,255,220,0.6);
+}
+#hs-stats {
+  width: 74%;
+  margin: -6% auto 0;
+  padding: 4px 12px 5px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #1a5fd0 0%, #0a2e7a 100%);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 14px rgba(255,200,0,0.5), 0 4px 10px rgba(0,0,0,0.45);
+  position: relative; z-index: -1;
+  flex-wrap: wrap;
+}
+#hs-next {
+  width: 74%; margin: 3px auto 0;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+}
+@media (max-width: 599px) {
+  #hs-panel { width: 96vw; transform: translate(-50%, -86%); }
+  #hs-stats { width: 86%; padding: 3px 8px 4px; }
+}
+/* "NEXT" jackpot target lives inside the stats strip */
+#hs-next { width: auto; margin: 0; font-size: clamp(0.8rem, 1.7vw, 1.05rem); font-family: 'Bangers', cursive; letter-spacing: 0.05em; color: var(--neon-teal); text-shadow: none; }
+#hs-panel { width: min(500px, 96vw); transform: translate(-50%, -82%); }
+#hs-stats { width: 80%; }
+@media (max-width: 599px) {
+  #hs-panel { width: 96vw; transform: translate(-50%, -86%); }
+  #hs-stats { width: 90%; gap: 10px; }
+}
+/* Stats strip sits in front of the ribbon ends so no stat gets covered */
+#hs-stats { z-index: 1; margin-top: -2.5%; width: 88%; }
+@media (max-width: 599px) { #hs-stats { width: 96%; } }
