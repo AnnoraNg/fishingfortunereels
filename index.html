@@ -4,9 +4,33 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fishing Fortune Reels</title>
+  <!-- Loading-screen art is fetched first, before everything else -->
+  <link rel="preload" href="assets/background_ocean.png" as="image"/>
+  <link rel="preload" href="assets/bonus_coin_320.png" as="image"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
-<body>
+<body class="is-loading">
+
+<!-- ░░░ LOADING SCREEN — preloads & decodes every image + font before play ░░░ -->
+<div id="loader" role="dialog" aria-modal="true" aria-label="Loading Fishing Fortune Reels">
+  <div id="loader-content">
+    <div id="loader-title">
+      <span class="title-line1">FISHING FORTUNE</span>
+      <span class="title-line2">REELS</span>
+    </div>
+
+    <div id="loadbar" role="progressbar" aria-label="Loading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="loadbar-track">
+        <div id="loadbar-fill"></div>
+      </div>
+      <img id="loadbar-coin" src="assets/bonus_coin_320.png" alt="" draggable="false">
+    </div>
+
+    <div id="loader-pct">0%</div>
+    <p id="loader-msg">Baiting the hooks…</p>
+    <button id="loader-start" hidden>TAP TO PLAY</button>
+  </div>
+</div>
 
 <!-- SVG filter: vertical motion blur used on spinning reels -->
 <svg style="display:none;position:absolute" xmlns="http://www.w3.org/2000/svg">

@@ -158,6 +158,7 @@ const state = {
   scriptCount: 0,   // paid base-game spins only — drives the demo script
   coinMults : [],   // [col][row] = Bonus Coin multiplier (null if not a coin)
   inHoldSpin: false,
+  ready     : false,  // true once the loading screen has finished
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -604,7 +605,7 @@ function spawnBubbles() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function doSpin() {
-  if (state.spinning || state.inHoldSpin) return;
+  if (!state.ready || state.spinning || state.inHoldSpin) return;
 
   const isFree = state.freeSpins > 0;
   const bet    = CONFIG.betLevels[state.betIndex];
@@ -1192,6 +1193,7 @@ function wireEvents() {
     elBuyFsModal.addEventListener('click', e => { if (e.target === elBuyFsModal) closeBuyFreeSpinsModal(); });
   }
   document.addEventListener('keydown', e => {
+    if (!state.ready) return;   // let Space/Enter press the loading screen's button
     if (e.code === 'Space' && !elSpinBtn.disabled) { e.preventDefault(); doSpin(); }
   });
 
@@ -1205,6 +1207,150 @@ function wireEvents() {
       }
     });
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOADING SCREEN
+// Every image the game can ever show (symbols, banners, buttons, CSS
+// backgrounds, avatars, mascot) is downloaded AND decoded up front, plus the
+// web fonts, so nothing pops in half-drawn the first time it appears.
+// The asset list is collected automatically from SYMBOLS, the page's <img>
+// tags and every url(...) in the stylesheets — new art is picked up for free.
+// ═══════════════════════════════════════════════════════════════════════════
+
+const preloadedImages = [];   // keep references so decoded images stay cached
+
+function collectAssetUrls() {
+  const urls = new Set();
+  const add = u => { if (u && /(^|\/)assets\//.test(u) && !u.startsWith('data:')) urls.add(u); };
+
+  SYMBOLS.forEach(s => add(s.img));
+  document.querySelectorAll('img[src]').forEach(img => add(img.getAttribute('src')));
+  document.querySelectorAll('[data-src]').forEach(el => add(el.dataset.src));
+
+  const urlRe = /url\(\s*["']?([^"')]+)["']?\s*\)/g;
+  const walk = rules => {
+    for (const rule of rules) {
+      if (rule.cssRules) walk(rule.cssRules);           // @media / @supports blocks
+      const text = rule.cssText || '';
+      let m;
+      while ((m = urlRe.exec(text))) add(m[1]);
+    }
+  };
+  for (const sheet of document.styleSheets) {
+    let rules;
+    try { rules = sheet.cssRules; } catch { continue; } // cross-origin (Google Fonts)
+    if (rules) walk(rules);
+  }
+  return [...urls];
+}
+
+function preloadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      preloadedImages.push(img);
+      // decode() finishes the PNG decode off the main thread, so the first
+      // paint of this image during play costs nothing
+      (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(() => resolve(url));
+    };
+    img.onerror = () => reject(url);
+    img.src = url;
+  });
+}
+
+function preloadFonts() {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  const fonts = Promise.all([
+    document.fonts.load('1em Bangers'),
+    document.fonts.load('900 1em Nunito'),
+    document.fonts.load('700 1em Nunito'),
+  ]).catch(() => {});
+  // Never let a slow font host hold the game hostage
+  return Promise.race([fonts, sleep(4000)]);
+}
+
+const LOADER_MESSAGES = [
+  [0,   'Baiting the hooks…'],
+  [25,  'Polishing the treasure chests…'],
+  [50,  'Waking up Poseidon…'],
+  [75,  'Filling the jackpots…'],
+  [100, 'The tide is in!'],
+];
+
+function runLoader() {
+  const loader  = document.getElementById('loader');
+  if (!loader) { state.ready = true; return; }
+  const bar     = document.getElementById('loadbar');
+  const fill    = document.getElementById('loadbar-fill');
+  const coin    = document.getElementById('loadbar-coin');
+  const pctEl   = document.getElementById('loader-pct');
+  const msgEl   = document.getElementById('loader-msg');
+  const startBt = document.getElementById('loader-start');
+
+  let target = 0, shown = 0, rafId = null;
+  const minShowUntil = performance.now() + 900;  // long enough to read, short enough not to annoy
+
+  // Smoothly ease the displayed % toward the real %, so the bar glides
+  function render() {
+    shown += (target - shown) * 0.12;
+    if (Math.abs(target - shown) < 0.15) shown = target;
+    const p = shown.toFixed(2);
+    fill.style.width = p + '%';
+    coin.style.left  = p + '%';
+    coin.style.transform = `translate(-50%, -50%) rotate(${shown * 7.2}deg)`;
+    const whole = Math.floor(shown);
+    pctEl.textContent = whole + '%';
+    bar.setAttribute('aria-valuenow', whole);
+    const msg = [...LOADER_MESSAGES].reverse().find(([at]) => whole >= at);
+    if (msg && msgEl.dataset.state !== 'error') msgEl.textContent = msg[1];
+    if (shown !== target) rafId = requestAnimationFrame(render); else rafId = null;
+  }
+  const setTarget = pct => { target = pct; if (!rafId) rafId = requestAnimationFrame(render); };
+
+  async function load(urls) {
+    msgEl.dataset.state = '';
+    startBt.hidden = true;
+    const steps = urls.length + 1;   // +1 for fonts
+    let done = 0;
+    const tick = () => setTarget(Math.min(99, (++done / steps) * 100));
+
+    const results = await Promise.allSettled([
+      ...urls.map(u => preloadImage(u).finally(tick)),
+      preloadFonts().finally(tick),
+    ]);
+    const failed = results.slice(0, urls.length)
+      .map((r, i) => r.status === 'rejected' ? urls[i] : null).filter(Boolean);
+
+    if (failed.length) {
+      msgEl.dataset.state = 'error';
+      msgEl.textContent = `${failed.length} image${failed.length > 1 ? 's' : ''} didn't load. Check your connection and try again.`;
+      startBt.textContent = 'RETRY';
+      startBt.hidden = false;
+      startBt.onclick = () => load(failed);
+      return;
+    }
+
+    const wait = minShowUntil - performance.now();
+    if (wait > 0) await sleep(wait);
+    setTarget(100);
+    await sleep(450);
+    shown = target = 100; render();   // land exactly on 100% before showing the button
+    loader.classList.add('ready');
+    startBt.textContent = 'TAP TO PLAY';
+    startBt.hidden = false;
+    startBt.onclick = enterGame;
+    startBt.focus({ preventScroll: true });
+  }
+
+  function enterGame() {
+    loader.classList.add('closing');
+    document.body.classList.remove('is-loading');
+    state.ready = true;
+    setTimeout(() => loader.remove(), 650);
+  }
+
+  load(collectAssetUrls());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1242,4 +1388,5 @@ document.addEventListener('DOMContentLoaded', () => {
   updateBuyFreeSpinsUI();
   setStatus('Welcome to Fishing Fortune Reels · Press SPIN to cast! 🎣');
   wireEvents();
+  runLoader();
 });
