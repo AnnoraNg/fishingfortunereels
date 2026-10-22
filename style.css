@@ -2,8 +2,8 @@
    Fishing Fortune Reels — style.css
    ═══════════════════════════════════════════════════════════════════ */
 
-/* Google Fonts — Bangers (display/numbers) + Nunito (labels/UI) */
-@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap');
+/* Google Fonts — Cinzel (display: titles, banners, buttons) + Philosopher (body: labels, numbers, messages) */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800;900&family=Philosopher:wght@400;700&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -43,13 +43,17 @@
 
   --cell-size    : clamp(76px, 11.5vw, 108px);
   --radius       : 14px;
+
+  /* Type */
+  --font-display : 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --font-body    : 'Philosopher', 'Segoe UI', system-ui, sans-serif;
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────── */
 html, body {
   width: 100%; height: 100%;
   overflow: hidden;
-  font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-body);
   background: #5baae0;
   color: var(--text-main);
   user-select: none;
@@ -167,14 +171,14 @@ html, body {
 .jp-label {
   font-size: clamp(0.6rem, 1.4vw, 0.75rem);
   font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   text-transform: uppercase; letter-spacing: 0.12em;
   line-height: 1;
 }
 
 .jp-value {
   font-size: clamp(1rem, 2.6vw, 1.4rem);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   letter-spacing: 0.06em;
   line-height: 1.2;
 }
@@ -194,7 +198,7 @@ html, body {
 }
 .title-line1 {
   font-size: clamp(1.4rem, 3.8vw, 2.2rem);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-weight: 400; letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold);
@@ -205,7 +209,7 @@ html, body {
 }
 .title-line2 {
   font-size: clamp(1.7rem, 4.5vw, 2.8rem);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-weight: 400; letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--neon-cyan);
@@ -326,12 +330,12 @@ html, body {
 #buy-fs-btn-desktop:disabled { opacity: 0.42; cursor: not-allowed; }
 #buy-fs-btn-desktop .buy-fs-icon { font-size: 1.7rem; line-height: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25)); }
 #buy-fs-btn-desktop .buy-fs-label {
-  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-family: var(--font-body); font-weight: 900;
   font-size: 0.68rem; letter-spacing: 0.08em; line-height: 1.15;
   color: #1a3a5c; text-align: center;
 }
 #buy-fs-btn-desktop .buy-fs-cost {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: 0.72rem; letter-spacing: 0.04em;
   color: #7a4a00;
 }
@@ -364,13 +368,13 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   animation: panelPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 #buy-fs-title {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: 1.5rem; letter-spacing: 0.1em;
   color: #7a4a00;
   margin-bottom: 14px;
 }
 #buy-fs-desc {
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   font-size: 0.85rem; line-height: 1.5;
   color: #1a3a5c;
   margin-bottom: 22px;
@@ -389,12 +393,12 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   box-shadow: 0 2px 8px rgba(120,80,0,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 #buy-fs-price-label {
-  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-family: var(--font-body); font-weight: 900;
   font-size: 0.72rem; letter-spacing: 0.12em;
   color: #a07830;
 }
 #buy-fs-price-value {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: 1.25rem; color: #7a4a00;
 }
 #buy-fs-actions { display: flex; gap: 14px; }
@@ -402,7 +406,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   flex: 1;
   padding: 12px 0;
   border-radius: 12px;
-  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-family: var(--font-body); font-weight: 900;
   font-size: 0.85rem; letter-spacing: 0.1em;
   cursor: pointer; transition: transform 0.12s, box-shadow 0.12s;
 }
@@ -542,7 +546,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 }
 #status-text {
   font-size: clamp(0.78rem, 1.8vw, 1rem);
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   font-weight: 800;
   color: var(--neon-cyan);
   text-shadow: 0 0 7px rgba(0,220,255,0.45);
@@ -566,13 +570,13 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 }
 .fs-label {
   font-size: clamp(0.8rem, 1.8vw, 1rem);
-  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-family: var(--font-body); font-weight: 900;
   color: var(--neon-cyan);
   text-shadow: 0 0 6px rgba(0,220,255,0.5);
 }
 .fs-count {
   font-size: clamp(1.3rem, 3vw, 1.8rem);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   letter-spacing: 0.06em;
   color: var(--gold); text-shadow: 0 0 10px rgba(255,200,0,0.75);
 }
@@ -607,14 +611,14 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 
 .bc-label {
   font-size: clamp(0.6rem, 1.3vw, 0.75rem);
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   font-weight: 900; text-transform: uppercase;
   letter-spacing: 0.14em; line-height: 1;
   margin-bottom: 3px;
 }
 .bc-value {
   font-size: clamp(0.85rem, 2vw, 1.15rem);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-weight: 400; letter-spacing: 0.04em; line-height: 1;
 }
 .bc-value.gold { color: var(--gold); text-shadow: 0 0 8px rgba(255,200,0,0.55); }
@@ -656,7 +660,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   border-radius: 8px;
   color: #ffffff;
   font-size: 0.65rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.12em;
   padding: 5px 10px;
   cursor: pointer; transition: all 0.12s;
@@ -708,7 +712,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   border-radius: 13px;
   color: #1a0900;
   font-size: clamp(1.1rem, 2.8vw, 1.5rem);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-weight: 400; letter-spacing: 0.14em;
   padding: 12px 32px; min-width: 140px;
   cursor: pointer; transition: all 0.13s;
@@ -764,7 +768,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 /* ─── Payline Hint ─────────────────────────────────────────────────── */
 #payline-hint {
   font-size: clamp(0.65rem, 1.4vw, 0.8rem);
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   color: rgba(200,230,255,0.55);
   letter-spacing: 0.04em;
@@ -821,7 +825,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 #paytable-header h2 {
   font-size: 1.1rem; font-weight: 900; letter-spacing: 0.12em;
   color: var(--gold); text-shadow: 0 0 10px rgba(255,200,0,0.55);
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 #paytable-close {
   background: none; border: 1px solid rgba(0,160,210,0.38);
@@ -833,7 +837,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 .pt-note {
   font-size: 0.72rem; color: var(--text-dim);
   padding: 8px 20px 0; line-height: 1.5;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 #paytable-scroll { overflow-y: auto; padding: 10px 20px 20px; }
 
@@ -842,7 +846,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   text-align: left; padding: 6px 8px;
   color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase;
   letter-spacing: 0.1em; border-bottom: 1px solid rgba(0,150,220,0.2);
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-body);
 }
 #paytable-table td {
   padding: 7px 8px;
@@ -860,13 +864,13 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 #payline-diagrams h3 {
   font-size: 0.85rem; font-weight: 800;
   color: var(--neon-cyan); margin-bottom: 8px;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
   text-shadow: 0 0 6px rgba(0,220,255,0.45);
 }
 #pl-grid p {
   font-size: 0.73rem; color: var(--text-dim);
   margin-bottom: 4px; line-height: 1.6;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 /* ─── Profile Pic Widget ───────────────────────────────────────────── */
@@ -906,7 +910,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 }
 #profile-picker.open { display: block; }
 #picker-title {
-  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-family: var(--font-body); font-weight: 900;
   font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--gold); text-align: center; margin-bottom: 10px;
 }
@@ -939,7 +943,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   background: rgba(0,20,60,0.65);
   color: var(--gold);
   font-size: 0.75rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.1em;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -964,7 +968,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   background: rgba(0,20,60,0.65);
   color: var(--gold);
   font-size: 0.75rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.1em;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -989,7 +993,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
   background: rgba(0,20,60,0.65);
   color: var(--gold);
   font-size: 0.75rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.1em;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -1173,7 +1177,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ── Tier label ── */
 #win-tier-label {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(2.8rem, 7vw, 4.8rem);
   font-weight: 400; letter-spacing: 0.22em;
   text-transform: uppercase; line-height: 1;
@@ -1186,7 +1190,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ── Amount counter ── */
 #win-overlay-amount {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(2.2rem, 5.5vw, 3.6rem);
   font-weight: 400; letter-spacing: 0.08em; line-height: 1;
   color: #ffffff;
@@ -1208,7 +1212,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
   background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 50%, var(--gold-mid) 100%);
   border: 2px solid var(--gold-bright);
   border-radius: 14px; color: #1a0800;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   font-size: 0.95rem; font-weight: 900; letter-spacing: 0.12em;
   padding: 11px 40px; cursor: pointer; transition: all 0.13s;
   box-shadow: 0 0 20px rgba(255,200,0,0.45), 0 4px 14px rgba(0,0,0,0.5);
@@ -1376,7 +1380,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
 
 #mobile-drawer-title {
   font-size: 0.65rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   text-transform: uppercase; letter-spacing: 0.18em;
   color: var(--gold-mid); text-align: center;
   margin-bottom: 14px; margin-top: 4px;
@@ -1401,13 +1405,13 @@ body.paytable-open #mobile-menu-btn { display: none; }
 .mjp-row.mjp-mini   { border: 1px solid rgba(160,180,200,0.35); }
 .mjp-label {
   font-size: 0.58rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   text-transform: uppercase; letter-spacing: 0.12em;
   color: var(--gold-mid); line-height: 1;
 }
 .mjp-val {
   font-size: 1.05rem;
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   letter-spacing: 0.05em;
   color: var(--gold); line-height: 1.3;
 }
@@ -1421,7 +1425,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
   border-radius: 10px;
   color: var(--gold);
   font-size: 0.78rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.08em;
   cursor: pointer; margin-bottom: 12px;
   text-align: center;
@@ -1437,7 +1441,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
   border-radius: 10px;
   color: var(--gold);
   font-size: 0.78rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.08em;
   cursor: pointer; margin-bottom: 12px;
   text-align: center;
@@ -1453,7 +1457,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
   border-radius: 10px;
   color: var(--gold);
   font-size: 0.78rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.08em;
   cursor: pointer; margin-bottom: 12px;
   text-align: center;
@@ -1469,7 +1473,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
   border-radius: 10px;
   color: var(--gold);
   font-size: 0.78rem; font-weight: 900;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.06em;
   cursor: pointer; margin-bottom: 12px;
   text-align: center;
@@ -1482,7 +1486,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
 /* Payline hint inside drawer */
 #mobile-payline-hint {
   font-size: 0.68rem;
-  font-family: 'Nunito', sans-serif; font-weight: 700;
+  font-family: var(--font-body); font-weight: 700;
   color: var(--text-dim);
   text-align: center; line-height: 1.65;
 }
@@ -1681,7 +1685,7 @@ body.paytable-open #mobile-menu-btn { display: none; }
   position: absolute;
   left: 50%; top: 68%;
   transform: translate(-50%, -50%);
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: calc(var(--cell-size) * 0.2);
   letter-spacing: 0.04em;
   color: #fff;
@@ -1742,7 +1746,7 @@ body.hold-spin-active #hs-panel { display: block; animation: hsIn 0.4s ease-out;
 @keyframes hsIn { from { opacity: 0; transform: translate(-50%, -110%); } }
 
 #hs-title {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(1.1rem, 2.6vw, 1.6rem);
   letter-spacing: 0.12em;
   color: var(--gold-bright);
@@ -1759,7 +1763,7 @@ body.hold-spin-active #hs-panel { display: block; animation: hsIn 0.4s ease-out;
   color: rgba(200,230,255,0.75);
 }
 .hs-v {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(0.95rem, 2vw, 1.2rem);
   letter-spacing: 0.05em; color: #fff;
 }
@@ -1786,11 +1790,11 @@ body.hold-spin-active #hs-panel { display: block; animation: hsIn 0.4s ease-out;
 #pt-features { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(0,150,220,0.15); }
 #pt-features h3 {
   font-size: 0.85rem; font-weight: 800; color: var(--neon-cyan); margin-bottom: 8px;
-  font-family: Arial, sans-serif; text-shadow: 0 0 6px rgba(0,220,255,0.45);
+  font-family: var(--font-body); text-shadow: 0 0 6px rgba(0,220,255,0.45);
 }
 .pt-feature { margin-bottom: 10px; }
 .pt-feature b { color: var(--gold); font-size: 0.82rem; }
-.pt-feature p { font-size: 0.74rem; color: var(--text-main); line-height: 1.5; margin-top: 3px; font-family: Arial, sans-serif; }
+.pt-feature p { font-size: 0.74rem; color: var(--text-main); line-height: 1.5; margin-top: 3px; font-family: var(--font-body); }
 .pt-feature .pt-small { color: var(--text-dim); font-size: 0.68rem; }
 .pt-jp-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.74rem; }
 .pt-jp-table th { text-align: left; color: var(--text-dim); font-size: 0.62rem; letter-spacing: 0.08em; padding: 3px 6px; border-bottom: 1px solid rgba(0,150,220,0.2); }
@@ -1830,7 +1834,7 @@ body.hold-spin-active #game-title { visibility: hidden; }
   position: absolute; left: 50%; top: 42%;
   transform: translate(-50%, -50%);
   white-space: nowrap;
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(1.3rem, 5.2vw, 2.4rem);
   letter-spacing: 0.1em;
   color: #0b3a8c;
@@ -1856,7 +1860,7 @@ body.hold-spin-active #game-title { visibility: hidden; }
   #hs-stats { width: 86%; padding: 3px 8px 4px; }
 }
 /* "NEXT" jackpot target lives inside the stats strip */
-#hs-next { width: auto; margin: 0; font-size: clamp(0.8rem, 1.7vw, 1.05rem); font-family: 'Bangers', cursive; letter-spacing: 0.05em; color: var(--neon-teal); text-shadow: none; }
+#hs-next { width: auto; margin: 0; font-size: clamp(0.8rem, 1.7vw, 1.05rem); font-family: var(--font-display); letter-spacing: 0.05em; color: var(--neon-teal); text-shadow: none; }
 #hs-panel { width: min(500px, 96vw); transform: translate(-50%, -82%); }
 #hs-stats { width: 80%; }
 @media (max-width: 599px) {
@@ -1991,7 +1995,7 @@ body.is-loading #poseidon-wrap { visibility: hidden; }
 }
 
 #loader-pct {
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(1.5rem, 4vh, 2.1rem);
   letter-spacing: 0.08em;
   color: var(--gold-bright);
@@ -2015,7 +2019,7 @@ body.is-loading #poseidon-wrap { visibility: hidden; }
   padding: 0.75em 2.4em;
   border: 2px solid #fff3b0;
   border-radius: 999px;
-  font-family: 'Bangers', cursive;
+  font-family: var(--font-display);
   font-size: clamp(1.3rem, 3.4vh, 1.7rem);
   letter-spacing: 0.12em;
   color: #5a3100;
@@ -2059,3 +2063,132 @@ body.is-loading #poseidon-wrap { visibility: hidden; }
 #loader-start { width: auto; max-width: 100%; align-self: center; }
 #loader-content::before { background: radial-gradient(closest-side, rgba(3,22,62,0.5) 0%, rgba(3,22,62,0.25) 55%, rgba(3,22,62,0) 100%); }
 #loader-start { font-size: clamp(1.15rem, min(3.4vh, 5.6vw), 1.7rem); padding: 0.7em 1.9em; }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   TYPE SYSTEM — Option B "Olympus Deep"
+   Cinzel (engraved capitals) for titles, banners and buttons;
+   Philosopher for labels, numbers and messages.
+   ═══════════════════════════════════════════════════════════════════ */
+/* Display roles need real weight — Cinzel at 400 is too thin */
+.title-line1, .title-line2, #spin-btn, #buy-fs-title, #win-tier-label,
+#win-overlay-amount, #hs-title, #hs-title span, #loader-start,
+#paytable-header h2, #payline-diagrams h3, #pt-features h3, .max-btn {
+  font-family: var(--font-display); font-weight: 800;
+}
+/* Numbers read best in the body face (wide Cinzel digits crowd the bar) */
+.jp-value, .mjp-val, .bc-value, .buy-fs-cost, #buy-fs-price-value, .fs-count,
+.cell .coin-value, .hs-v, #hs-next, #loader-pct {
+  font-family: var(--font-body); font-weight: 700; letter-spacing: 0.02em;
+}
+
+/* Engraved-gold title, shared by the in-game header and the loading screen */
+.title-line1, .title-line2 {
+  font-weight: 900;
+  background: linear-gradient(180deg, #fffbe0 0%, #fff1a8 25%, #f6cd4c 52%, #a86d00 62%, #f9d86a 80%, #fff2b0 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 0 #4a2c00) drop-shadow(0 6px 12px rgba(0,0,0,0.55));
+}
+.title-line1 { letter-spacing: 0.04em; }
+.title-line2 { letter-spacing: 0.26em; margin-right: -0.26em; }
+#game-title .title-line1 { font-size: clamp(1.3rem, 3.2vw, 2rem); }
+#game-title .title-line2 { font-size: clamp(1.6rem, 4vw, 2.6rem); }
+#game-title .title-fish { display: none; }
+
+/* Cinzel is wider than the old face — keep big numbers and labels inside their boxes */
+#win-tier-label { letter-spacing: 0.06em; }
+#spin-btn { letter-spacing: 0.08em; }
+.cell .coin-value { font-size: calc(var(--cell-size) * 0.17); -webkit-text-stroke: 0.6px #5a3200; }
+#hs-title span { font-size: clamp(1.1rem, 4.4vw, 2rem); letter-spacing: 0.08em; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOADING SCREEN — Option B layout
+   Desktop: title block left-aligned on the left, Poseidon standing right.
+   Phone: everything left-aligned; Poseidon sits lower, behind the title,
+   leaving open sky at the top.
+   ═══════════════════════════════════════════════════════════════════ */
+#loader { display: block; padding: 0; }
+#loader-mascot {
+  position: absolute; z-index: 0;
+  right: 5vw; bottom: -2vh;
+  height: 94vh; width: auto; max-width: 48vw; object-fit: contain; object-position: bottom right;
+  filter: drop-shadow(0 12px 22px rgba(0,0,0,0.55));
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  pointer-events: none;
+}
+#loader-mascot.in { opacity: 1; transform: none; }
+#loader-shade {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(2,20,51,0.85) 0%, rgba(2,20,51,0.6) 38%, rgba(2,20,51,0) 62%),
+    linear-gradient(0deg, rgba(2,20,51,0.7) 0%, rgba(2,20,51,0) 40%);
+}
+#loader-content {
+  position: absolute; z-index: 2;
+  inset: 0 auto 0 0;
+  width: min(620px, 52vw);
+  padding: max(24px, env(safe-area-inset-top, 0px)) 0 max(24px, env(safe-area-inset-bottom, 0px)) max(7vw, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+  gap: clamp(14px, 3vh, 26px);
+  text-align: left;
+}
+#loader-content::before { display: none; }
+#loader-title { align-items: flex-start; margin: 0; filter: none; }
+.loader-rule {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(0.6rem, 1.3vh, 0.8rem); letter-spacing: 0.5em;
+  color: var(--gold); margin-bottom: 4px;
+}
+.loader-rule::before, .loader-rule::after { content: ''; height: 1.5px; flex: 1; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+#loader-title .title-line1 { font-size: clamp(1.9rem, min(4.4vw, 7vh), 4rem); line-height: 1; }
+#loader-title .title-line2 { font-size: clamp(2.8rem, min(6.8vw, 11vh), 6.2rem); line-height: 1; margin-top: 2px; }
+#loadbar { width: 100%; max-width: 480px; }
+#loader-meta {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  width: 100%; max-width: 480px; margin-top: -4px;
+}
+#loader-meta #loader-msg { min-height: 0; font-family: var(--font-body); font-weight: 700; font-size: clamp(0.85rem, 2vh, 1.05rem); text-align: left; }
+#loader-meta #loader-pct { margin: 0; font-size: clamp(1.1rem, 2.6vh, 1.5rem); }
+#loader-start { align-self: flex-start; font-size: clamp(1rem, 2.6vh, 1.3rem); letter-spacing: 0.18em; padding: 0.8em 2em; }
+
+/* Phone / narrow portrait */
+@media (max-width: 599px), (max-aspect-ratio: 3/4) {
+  #loader-mascot {
+    right: auto; left: 50%; bottom: auto;
+    top: 15vh;                    /* lower — open sky above */
+    height: 56vh; max-width: none;
+    transform: translate(-36%, 16px);
+  }
+  #loader-mascot.in { transform: translate(-36%, 0); }
+  #loader-shade {
+    background:
+      linear-gradient(0deg, rgba(2,20,51,0.92) 0%, rgba(2,20,51,0.7) 30%, rgba(2,20,51,0.15) 55%, rgba(2,20,51,0) 70%);
+  }
+  #loader-content {
+    inset: 0; width: auto;
+    justify-content: flex-end;
+    padding: 0 max(7vw, env(safe-area-inset-right, 0px)) max(9vh, calc(env(safe-area-inset-bottom, 0px) + 32px)) max(7vw, env(safe-area-inset-left, 0px));
+    gap: clamp(12px, 2.4vh, 20px);
+  }
+  #loader-title { width: 100%; margin-bottom: 1vh; }
+  #loader-title .title-line1 { font-size: min(9.4vw, 3rem); }
+  #loader-title .title-line2 { font-size: min(14.5vw, 4.6rem); }
+  #loadbar { width: calc(100% - 24px); max-width: none; }   /* room for the coin at 100% */
+  #loader-meta { max-width: none; width: calc(100% - 24px); }
+  #loader-start { align-self: stretch; margin-right: 24px; text-align: center; }
+}
+/* Phone: keep "FISHING FORTUNE" on one line inside the gutter */
+@media (max-width: 599px), (max-aspect-ratio: 3/4) {
+  #loader-title .title-line1 { font-size: min(7.9vw, 2.9rem); }
+  #loader-title .title-line2 { font-size: min(13.6vw, 4.4rem); }
+}
+/* Coin values: heavier outline so they pop off the gold banner */
+.cell .coin-value {
+  font-size: calc(var(--cell-size) * 0.19);
+  -webkit-text-stroke: 3px #4a2800; paint-order: stroke fill;
+  text-shadow: 0 2px 3px rgba(0,0,0,0.7);
+}

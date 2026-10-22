@@ -1262,9 +1262,10 @@ function preloadImage(url) {
 function preloadFonts() {
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
   const fonts = Promise.all([
-    document.fonts.load('1em Bangers'),
-    document.fonts.load('900 1em Nunito'),
-    document.fonts.load('700 1em Nunito'),
+    document.fonts.load('900 1em Cinzel'),
+    document.fonts.load('800 1em Cinzel'),
+    document.fonts.load('700 1em Philosopher'),
+    document.fonts.load('400 1em Philosopher'),
   ]).catch(() => {});
   // Never let a slow font host hold the game hostage
   return Promise.race([fonts, sleep(4000)]);

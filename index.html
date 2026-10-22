@@ -7,14 +7,18 @@
   <!-- Loading-screen art is fetched first, before everything else -->
   <link rel="preload" href="assets/background_ocean.png" as="image"/>
   <link rel="preload" href="assets/bonus_coin_320.png" as="image"/>
+  <link rel="preload" href="assets/poseidon_mascot_768.webp" as="image"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body class="is-loading">
 
 <!-- ░░░ LOADING SCREEN — preloads & decodes every image + font before play ░░░ -->
 <div id="loader" role="dialog" aria-modal="true" aria-label="Loading Fishing Fortune Reels">
+  <img id="loader-mascot" src="assets/poseidon_mascot_768.webp" alt="" draggable="false" onload="this.classList.add('in')">
+  <div id="loader-shade"></div>
   <div id="loader-content">
     <div id="loader-title">
+      <span class="loader-rule">EST · ATLANTIS</span>
       <span class="title-line1">FISHING FORTUNE</span>
       <span class="title-line2">REELS</span>
     </div>
@@ -25,9 +29,11 @@
       </div>
       <img id="loadbar-coin" src="assets/bonus_coin_320.png" alt="" draggable="false">
     </div>
+    <div id="loader-meta">
+      <span id="loader-msg">Baiting the hooks…</span>
+      <span id="loader-pct">0%</span>
+    </div>
 
-    <div id="loader-pct">0%</div>
-    <p id="loader-msg">Baiting the hooks…</p>
     <button id="loader-start" hidden>TAP TO PLAY</button>
   </div>
 </div>
@@ -92,7 +98,7 @@
 
 <!-- ░░░ POSEIDON MASCOT (floats beside the reel board on wide screens) ░░░ -->
 <div id="poseidon-wrap" aria-hidden="true">
-  <img id="poseidon-mascot" src="assets/poseidon_mascot.png" alt="">
+  <img id="poseidon-mascot" src="assets/poseidon_mascot_768.webp" alt="">
 </div>
 
 <!-- ░░░ BUY FREE SPINS — desktop floating button (left of the reel board) ░░░ -->
