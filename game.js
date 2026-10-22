@@ -158,6 +158,7 @@ const SPEED_LEVELS = [
   { label: '⚡ ×1', mult: 1   },
   { label: '⚡ ×2', mult: 2   },
   { label: '⚡ ×4', mult: 4   },
+  { label: '⚡ ×8', mult: 8   },
 ];
 
 const state = {
@@ -503,7 +504,7 @@ function spinReel(colIndex, finalSymbols, stopDelay, finalCoinMults = [], isFree
       // Ease yOff → 0  (remaining scroll distance is -yOff, always positive)
       const startY  = yOff;   // negative value (e.g. -0.4 * cellH)
       const startTs = performance.now();
-      const DUR     = 420;    // settle duration in ms
+      const DUR     = speedMult >= 8 ? 260 : 420;    // settle duration in ms (snappier at ×8)
 
       function settle(ts) {
         const t = Math.min((ts - startTs) / DUR, 1);
@@ -811,7 +812,7 @@ function scheduleAutoFreeSpin() {
   if (state.freeSpins <= 0) return;
   setTimeout(() => {
     if (!state.spinning && !state.inHoldSpin && state.freeSpins > 0) doSpin();
-  }, 1000);
+  }, Math.max(250, 1000 / SPEED_LEVELS[state.speedIndex].mult));   // shorter pause at higher speeds
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
