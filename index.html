@@ -388,22 +388,26 @@
     const GAP = 70; // gap between the board's gold frame and the mascot
 
     function place() {
+      // Keep it laid out (display:block) so its width can always be measured;
+      // hiding with display:none made the width read 0 and the check flip-flop.
+      wrap.style.display = 'block';
       const rect       = board.getBoundingClientRect();
       const wrapWidth  = wrap.offsetWidth;
       const spaceRight = window.innerWidth - rect.right;
 
       // Not enough room beside the board (tablet/mobile) — hide it
       if (spaceRight < wrapWidth + GAP + 20) {
-        wrap.style.display = 'none';
+        wrap.style.visibility = 'hidden';
         return;
       }
-      wrap.style.display   = 'block';
+      wrap.style.visibility = 'visible';
       wrap.style.left      = (rect.right + GAP) + 'px';
       wrap.style.top       = (rect.top + rect.height / 2) + 'px';
       wrap.style.transform = 'translateY(-50%)';
     }
 
     window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, { passive: true });   // stay beside the board while scrolling
     window.addEventListener('load', place);
     place();
     // Re-check periodically in case the board size changes (e.g. free spins banner)
@@ -419,6 +423,7 @@
     const GAP = 70; // matches the gap used on the mascot's side for visual balance
 
     function place() {
+      btn.style.display = 'flex';   // same fix as the mascot: always measurable
       const rect      = board.getBoundingClientRect();
       const btnWidth  = btn.offsetWidth;
       const spaceLeft = rect.left;
@@ -426,16 +431,17 @@
       // Not enough room beside the board (tablet/mobile) — hide it;
       // the drawer button covers this case instead.
       if (spaceLeft < btnWidth + GAP + 20) {
-        btn.style.display = 'none';
+        btn.style.visibility = 'hidden';
         return;
       }
-      btn.style.display   = 'flex';
+      btn.style.visibility = 'visible';
       btn.style.left      = (rect.left - GAP - btnWidth) + 'px';
       btn.style.top       = (rect.top + rect.height / 2) + 'px';
       btn.style.transform = 'translateY(-50%)';
     }
 
     window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, { passive: true });   // stay beside the board while scrolling
     window.addEventListener('load', place);
     place();
     setInterval(place, 500);

@@ -1895,7 +1895,7 @@ body.hold-spin-active #game-title { visibility: hidden; }
 body.is-loading #demo-toggle-btn, body.is-loading #speed-toggle-btn,
 body.is-loading #frame-toggle-btn, body.is-loading #mobile-menu-btn,
 body.is-loading #profile-widget, body.is-loading #buy-fs-btn-desktop,
-body.is-loading #poseidon-wrap { visibility: hidden; }
+body.is-loading #poseidon-wrap { visibility: hidden !important; }
 
 #loader-content {
   display: flex; flex-direction: column; align-items: center;
@@ -2192,3 +2192,22 @@ body.is-loading #poseidon-wrap { visibility: hidden; }
   -webkit-text-stroke: 3px #4a2800; paint-order: stroke fill;
   text-shadow: 0 2px 3px rgba(0,0,0,0.7);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCROLLING — the page used to be locked (overflow:hidden), so when
+   something made the game taller than the window (e.g. the Free Spins
+   banner on a short laptop screen) the bottom bar was cut off with no
+   way to reach it. Now the page scrolls vertically whenever it's taller
+   than the window, at every screen size; horizontal scroll stays off.
+   ═══════════════════════════════════════════════════════════════════ */
+html {
+  height: auto; min-height: 100%;
+  overflow-x: hidden; overflow-y: auto;
+}
+body {
+  height: auto; min-height: 100%;
+  overflow-x: hidden; overflow-y: visible;
+}
+/* The loading screen and open dialogs still lock the page behind them */
+html:has(body.is-loading), html:has(body.paytable-open), html:has(body.buyfs-open),
+body.is-loading, body.paytable-open, body.buyfs-open { overflow: hidden; }
