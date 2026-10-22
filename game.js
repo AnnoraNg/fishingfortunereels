@@ -1252,7 +1252,10 @@ function preloadImage(url) {
       preloadedImages.push(img);
       // decode() finishes the PNG decode off the main thread, so the first
       // paint of this image during play costs nothing
-      (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(() => resolve(url));
+      // Browsers pause decoding while the tab is in the background, so never
+      // let a pending decode hold up loading for more than a moment.
+      const decoded = (img.decode ? img.decode() : Promise.resolve()).catch(() => {});
+      Promise.race([decoded, sleep(2500)]).then(() => resolve(url));
     };
     img.onerror = () => reject(url);
     img.src = url;
