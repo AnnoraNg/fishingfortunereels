@@ -2313,3 +2313,18 @@ html:has(body.info-open), body.info-open { overflow: hidden; }
 /* Scale payline labels with the reel cell size (phones get smaller tags) */
 #payline-layer .pl-amt { font-size: calc(var(--cell-size) * 0.17); }
 #payline-layer .pl-num { font-size: calc(var(--cell-size) * 0.12); }
+
+/* Win banner title: always centred, balanced over two lines when long,
+   and a size down for long labels like "HOLD & SPIN WIN!" / "MAJOR JACKPOT!" */
+#win-overlay #win-tier-label {
+  width: 100%;
+  text-align: center;
+  text-wrap: balance;
+  letter-spacing: 0.06em;
+  margin-right: -0.06em;          /* letter-spacing adds trailing space — re-centre */
+}
+#win-overlay #win-tier-label.long { font-size: clamp(2rem, 5.2vw, 3.6rem); line-height: 1.05; }
+/* MASSIVE pulse used to animate letter-spacing to 0.26em, which spread the
+   title off-centre. Pulse scale only — keeps the text centred and compact. */
+#win-overlay.tier-massive #win-tier-label { animation: massivePulseScale 0.5s ease-in-out infinite alternate; }
+@keyframes massivePulseScale { from { transform: scale(1); } to { transform: scale(1.04); } }

@@ -1015,6 +1015,7 @@ function showWinOverlay(amount, bet, labelOverride = null) {
   overlay.className = '';
   overlay.classList.add('open', tier);
   tierLabel.textContent = labelOverride || label;
+  tierLabel.classList.toggle('long', tierLabel.textContent.length > 12);
   amountEl.textContent  = '0';
 
   // Spawn particles
