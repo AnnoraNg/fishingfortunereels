@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fishing Fortune Reels</title>
   <!-- Loading-screen art is fetched first, before everything else -->
-  <link rel="preload" href="assets/background_ocean.png" as="image"/>
-  <link rel="preload" href="assets/bonus_coin_320.png" as="image"/>
+  <link rel="preload" href="assets/background_ocean.webp" as="image"/>
+  <link rel="preload" href="assets/bonus_coin_320.webp" as="image"/>
   <link rel="preload" href="assets/poseidon_mascot_768.webp" as="image"/>
   <link rel="stylesheet" href="style.css"/>
 </head>
@@ -27,7 +27,7 @@
       <div id="loadbar-track">
         <div id="loadbar-fill"></div>
       </div>
-      <img id="loadbar-coin" src="assets/bonus_coin_320.png" alt="" draggable="false">
+      <img id="loadbar-coin" src="assets/bonus_coin_320.webp" alt="" draggable="false">
     </div>
     <div id="loader-meta">
       <span id="loader-msg">Baiting the hooks…</span>
@@ -67,13 +67,13 @@
 </div>
 
 <!-- ░░░ DEMO/REAL MODE TOGGLE (fixed top-right, left of SPEED) ░░░ -->
-<button id="demo-toggle-btn" title="Toggle demo mode (guaranteed early wins) vs real RNG" aria-label="Toggle demo or real spin mode">DEMO</button>
+<button id="demo-toggle-btn" title="Real odds — click for DEMO (scripted showcase wins)" aria-label="Switch between real odds and demo showcase mode">REAL</button>
 
 <!-- ░░░ SPEED TOGGLE (fixed top-right, left of MODE) ░░░ -->
 <button id="speed-toggle-btn" title="Change spin speed" aria-label="Change spin speed">⚡ ×1</button>
 
 <!-- ░░░ FRAME TOGGLE (fixed top-right, desktop only) ░░░ -->
-<button id="frame-toggle-btn" title="Toggle frame style" aria-label="Toggle frame style">MODE</button>
+<button id="frame-toggle-btn" title="Toggle frame style" aria-label="Toggle frame style">FRAME</button>
 
 <!-- ░░░ MOBILE MENU BUTTON (fixed top-right, mobile only) ░░░ -->
 <button id="mobile-menu-btn" aria-label="Open game menu">☰</button>
@@ -81,17 +81,17 @@
 <!-- ░░░ PROFILE PIC WIDGET (fixed top-left, floats over game) ░░░ -->
 <div id="profile-widget">
   <button id="profile-btn" aria-label="Choose profile picture">
-    <img id="profile-img" src="assets/profile_1.png" alt="Profile" draggable="false">
+    <img id="profile-img" src="assets/profile_1.webp" alt="Profile" draggable="false">
   </button>
   <div id="profile-picker" aria-label="Choose avatar" role="dialog">
     <div id="picker-title">Choose Avatar</div>
     <div id="picker-grid">
-      <button class="picker-opt" data-src="assets/profile_1.png" aria-label="Avatar 1"><img src="assets/profile_1.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_2.png" aria-label="Avatar 2"><img src="assets/profile_2.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_3.png" aria-label="Avatar 3"><img src="assets/profile_3.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_4.png" aria-label="Avatar 4"><img src="assets/profile_4.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_5.png" aria-label="Avatar 5"><img src="assets/profile_5.png" draggable="false"></button>
-      <button class="picker-opt" data-src="assets/profile_6.png" aria-label="Avatar 6"><img src="assets/profile_6.png" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_1.webp" aria-label="Avatar 1"><img src="assets/profile_1.webp" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_2.webp" aria-label="Avatar 2"><img src="assets/profile_2.webp" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_3.webp" aria-label="Avatar 3"><img src="assets/profile_3.webp" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_4.webp" aria-label="Avatar 4"><img src="assets/profile_4.webp" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_5.webp" aria-label="Avatar 5"><img src="assets/profile_5.webp" draggable="false"></button>
+      <button class="picker-opt" data-src="assets/profile_6.webp" aria-label="Avatar 6"><img src="assets/profile_6.webp" draggable="false"></button>
     </div>
   </div>
 </div>
@@ -154,6 +154,12 @@
 
     <!-- 5 × 3 reel grid — built by game.js -->
     <div id="reel-grid"></div>
+
+    <!-- Winning paylines are drawn here (game.js → showPaylines) -->
+    <svg id="payline-layer" aria-hidden="true"></svg>
+
+    <!-- Shown only in DEMO mode so nobody mistakes scripted wins for real odds -->
+    <div id="demo-badge" aria-live="polite">DEMO · SCRIPTED SHOWCASE WINS</div>
 
     <!-- Hold & Spin status ribbon (visible only during the feature) -->
     <div id="hs-panel" aria-live="polite">
@@ -224,7 +230,7 @@
   </div>
 
   <!-- ── PAYLINE HINT ── -->
-  <div id="payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; 6+ Coins = Hold &amp; Spin &nbsp;·&nbsp; Spacebar = Spin</div>
+  <div id="payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; 6+ Coins = Hold &amp; Spin &nbsp;·&nbsp; Space = Spin / Stop</div>
 
 </div><!-- /#app -->
 
@@ -269,19 +275,45 @@
   </div>
 
   <!-- Frame mode toggle (mirrors the desktop MODE button) -->
-  <button id="mobile-frame-toggle">⬡ MODE: GOLD FRAME</button>
+  <button id="mobile-frame-toggle">⬡ FRAME: GOLD</button>
 
   <!-- Speed toggle (mirrors the desktop ⚡ button) -->
   <button id="mobile-speed-toggle">⚡ SPEED: ×1</button>
 
   <!-- Demo/Real toggle (mirrors the desktop DEMO/REAL button) -->
-  <button id="mobile-demo-toggle">🎲 SPINS: DEMO</button>
+  <button id="mobile-demo-toggle">🎲 ODDS: REAL</button>
 
   <!-- Buy Free Spins (mirrors the desktop floating button) -->
   <button id="buy-fs-btn-mobile">🌊 BUY 10 FREE SPINS — <span class="buy-fs-cost">0</span></button>
 
   <!-- Payline hint -->
-  <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; 6+ Coins = Hold &amp; Spin &nbsp;·&nbsp; Spacebar = Spin</p>
+  <p id="mobile-payline-hint">10 Lines &nbsp;·&nbsp; Wild replaces all &nbsp;·&nbsp; 3+ Scatter = Free Spins &nbsp;·&nbsp; 6+ Coins = Hold &amp; Spin &nbsp;·&nbsp; Space = Spin / Stop</p>
+</div>
+
+<!-- ░░░ FREE SPINS SUMMARY ░░░ -->
+<div id="fs-summary-modal" class="info-modal" role="dialog" aria-modal="true" aria-labelledby="fs-sum-title">
+  <div class="info-panel">
+    <div class="info-title" id="fs-sum-title">FREE SPINS COMPLETE</div>
+    <p class="info-desc">You played <b id="fs-sum-spins">0</b> Free Spins with every win paying <b id="fs-sum-mult">2×</b>.</p>
+    <div class="info-amount">
+      <span class="info-amount-label">TOTAL WON</span>
+      <span class="info-amount-value" id="fs-sum-total">0</span>
+    </div>
+    <button class="info-btn" id="fs-sum-collect">COLLECT</button>
+  </div>
+</div>
+
+<!-- ░░░ OUT OF COINS — free refill ░░░ -->
+<div id="refill-modal" class="info-modal" role="dialog" aria-modal="true" aria-labelledby="refill-title">
+  <div class="info-panel">
+    <div class="info-title" id="refill-title">OUT OF COINS</div>
+    <p class="info-desc">The tide went out on your balance. Here's a fresh catch so you can keep playing.</p>
+    <div class="info-amount">
+      <span class="info-amount-label">FREE COINS</span>
+      <span class="info-amount-value" id="refill-amount">5,000,000</span>
+    </div>
+    <button class="info-btn" id="refill-collect">COLLECT FREE COINS</button>
+  </div>
 </div>
 
 <!-- ░░░ BUY FREE SPINS — confirmation popup ░░░ -->
@@ -362,9 +394,15 @@
       e.stopPropagation();
       picker.classList.toggle('open');
     });
+    // Restore the saved avatar
+    const saved = typeof SAVED !== 'undefined' ? SAVED.avatar : null;
+    opts.forEach(opt => {
+      if (saved && opt.dataset.src === saved) { img.src = saved; opt.classList.add('selected'); }
+    });
     opts.forEach(opt => {
       opt.addEventListener('click', () => {
         img.src = opt.dataset.src;
+        if (typeof writeSave === 'function') writeSave({ avatar: opt.dataset.src });
         // Highlight selected
         opts.forEach(o => o.classList.remove('selected'));
         opt.classList.add('selected');
@@ -460,12 +498,20 @@
     const btn   = document.getElementById('frame-toggle-btn');
     const board = document.getElementById('game-board');
     if (!btn || !board) return;
+    // Restore the saved frame style
+    if (typeof SAVED !== 'undefined' && SAVED.frameOff) {
+      board.classList.add('frame-off');
+      btn.title = 'Switch to gold frame';
+      const mt = document.getElementById('mobile-frame-toggle');
+      if (mt) mt.textContent = '⬡ FRAME: CLEAR';
+    }
     btn.addEventListener('click', () => {
       const off = board.classList.toggle('frame-off');
+      if (typeof writeSave === 'function') writeSave({ frameOff: off });
       btn.title = off ? 'Switch to gold frame' : 'Switch to transparent';
       // Sync label in mobile drawer
       const mobileToggle = document.getElementById('mobile-frame-toggle');
-      if (mobileToggle) mobileToggle.textContent = off ? '⬡ MODE: TRANSPARENT' : '⬡ MODE: GOLD FRAME';
+      if (mobileToggle) mobileToggle.textContent = off ? '⬡ FRAME: CLEAR' : '⬡ FRAME: GOLD';
     });
   })();
 
@@ -479,13 +525,15 @@
       const isDemo = typeof CONFIG !== 'undefined' ? CONFIG.demoMode : true;
       if (desktopBtn) {
         desktopBtn.textContent = isDemo ? 'DEMO' : 'REAL';
+        desktopBtn.classList.toggle('is-demo', isDemo);
         desktopBtn.title = isDemo
-          ? 'Demo mode: early spins are boosted/guaranteed — click for real RNG'
-          : 'Real mode: pure weighted RNG — click for demo mode';
+          ? 'DEMO: a fixed script of showcase wins (big wins, Free Spins, Hold & Spin) — click for real odds'
+          : 'Real odds (~95% RTP) — click for DEMO: scripted showcase wins';
       }
       if (mobileBtn) {
-        mobileBtn.textContent = isDemo ? '🎲 SPINS: DEMO' : '🎲 SPINS: REAL';
+        mobileBtn.textContent = isDemo ? '🎲 ODDS: DEMO (SCRIPTED)' : '🎲 ODDS: REAL';
       }
+      document.body.classList.toggle('demo-on', isDemo);
     }
 
     function toggle() {
@@ -531,7 +579,8 @@
     if (mobileToggle && board) {
       mobileToggle.addEventListener('click', () => {
         const off = board.classList.toggle('frame-off');
-        mobileToggle.textContent = off ? '⬡ MODE: TRANSPARENT' : '⬡ MODE: GOLD FRAME';
+        if (typeof writeSave === 'function') writeSave({ frameOff: off });
+        mobileToggle.textContent = off ? '⬡ FRAME: CLEAR' : '⬡ FRAME: GOLD';
         if (desktopBtn) desktopBtn.title = off ? 'Switch to gold frame' : 'Switch to transparent';
       });
     }

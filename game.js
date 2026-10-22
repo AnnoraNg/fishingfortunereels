@@ -18,10 +18,13 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 const CONFIG = {
-  // Demo mode = early-spin guaranteed wins + hardcoded showcase spins (good for
-  // a portfolio/demo build so features are visible fast). Set to false for
-  // "real" slot behaviour — pure weighted RNG from the very first spin.
-  demoMode : true,
+  // Demo mode = a fixed, looping script of showcase wins (big/mega/massive,
+  // Free Spins, Hold & Spin) so every feature is visible fast. Off by
+  // default: visitors get the real weighted RNG unless they switch to DEMO.
+  demoMode : false,
+
+  // Free coins offered when the balance can't cover the smallest bet
+  refillAmount : 5_000_000,
 
   startingBalance : 15_000_000,
   betLevels       : [10_000, 20_000, 50_000, 100_000, 200_000, 500_000],
@@ -85,21 +88,35 @@ const CONFIG = {
   },
 };
 
+// ── Saved progress (per browser) ─────────────────────────────────────────
+// Balance, bet, speed, mode, avatar and frame style survive a reload.
+// Storage can be unavailable (private mode, blocked site data) — every
+// access is wrapped so the game simply starts fresh in that case.
+const SAVE_KEY = 'ffr.save.v1';
+function loadSave() {
+  try { return JSON.parse(localStorage.getItem(SAVE_KEY)) || {}; } catch { return {}; }
+}
+function writeSave(patch) {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ ...loadSave(), ...patch })); } catch {}
+}
+const SAVED = loadSave();
+if (typeof SAVED.demoMode === 'boolean') CONFIG.demoMode = SAVED.demoMode;
+
 // Bonus coin art (320px web copy of the 1024px source art)
-const BONUS_COIN_IMG = 'assets/bonus_coin_320.png';
+const BONUS_COIN_IMG = 'assets/bonus_coin_320.webp';
 
 // ── Symbols ─────────────────────────────────────────────────────────────────
 const SYMBOLS = [
-  { id:'small_fish',         label:'Small Fish',     img:'assets/small_fish.png',         weight:22,  payouts:{3:1.6, 4:4.8,  5:9.6 } },
-  { id:'crab',               label:'Crab',           img:'assets/crab.png',               weight:18,  payouts:{3:2,   4:5.6,  5:12  } },
-  { id:'anchor',             label:'Anchor',         img:'assets/anchor.png',             weight:16,  payouts:{3:2.4, 4:6.4,  5:14.4} },
-  { id:'big_fish',           label:'Big Fish',       img:'assets/big_fish.png',           weight:14,  payouts:{3:3.2, 4:8,    5:20  } },
-  { id:'pearl_shell',        label:'Pearl Shell',    img:'assets/pearl_shell.png',        weight:11,  payouts:{3:4,   4:10.4, 5:24  } },
-  { id:'fishing_hook',       label:'Fishing Hook',   img:'assets/fishing_hook.png',       weight:9,   payouts:{3:4.8, 4:12,   5:32  } },
-  { id:'octopus',            label:'Octopus',        img:'assets/octopus.png',            weight:5,   payouts:{3:6.4, 4:20,   5:48  } },
-  { id:'treasure_chest',     label:'Treasure Chest', img:'assets/treasure_chest.png',     weight:3,   payouts:{3:12,  4:40,   5:96  } },
-  { id:'wild_golden_net',    label:'Wild',           img:'assets/wild_golden_net.png',    weight:1.5, payouts:null, isWild:true    },
-  { id:'scatter_lucky_lure', label:'Scatter',        img:'assets/scatter_lucky_lure.png', weight:3,   payouts:null, isScatter:true },
+  { id:'small_fish',         label:'Small Fish',     img:'assets/small_fish.webp',         weight:22,  payouts:{3:1.6, 4:4.8,  5:9.6 } },
+  { id:'crab',               label:'Crab',           img:'assets/crab.webp',               weight:18,  payouts:{3:2,   4:5.6,  5:12  } },
+  { id:'anchor',             label:'Anchor',         img:'assets/anchor.webp',             weight:16,  payouts:{3:2.4, 4:6.4,  5:14.4} },
+  { id:'big_fish',           label:'Big Fish',       img:'assets/big_fish.webp',           weight:14,  payouts:{3:3.2, 4:8,    5:20  } },
+  { id:'pearl_shell',        label:'Pearl Shell',    img:'assets/pearl_shell.webp',        weight:11,  payouts:{3:4,   4:10.4, 5:24  } },
+  { id:'fishing_hook',       label:'Fishing Hook',   img:'assets/fishing_hook.webp',       weight:9,   payouts:{3:4.8, 4:12,   5:32  } },
+  { id:'octopus',            label:'Octopus',        img:'assets/octopus.webp',            weight:5,   payouts:{3:6.4, 4:20,   5:48  } },
+  { id:'treasure_chest',     label:'Treasure Chest', img:'assets/treasure_chest.webp',     weight:3,   payouts:{3:12,  4:40,   5:96  } },
+  { id:'wild_golden_net',    label:'Wild',           img:'assets/wild_golden_net.webp',    weight:1.5, payouts:null, isWild:true    },
+  { id:'scatter_lucky_lure', label:'Scatter',        img:'assets/scatter_lucky_lure.webp', weight:3,   payouts:null, isScatter:true },
   // Bonus Coin — base game only (removed from the Free Spins pool)
   { id:'bonus_coin',         label:'Bonus Coin',     img:BONUS_COIN_IMG,                  weight:13,  payouts:null, isCoin:true    },
 ];
@@ -159,7 +176,21 @@ const state = {
   coinMults : [],   // [col][row] = Bonus Coin multiplier (null if not a coin)
   inHoldSpin: false,
   ready     : false,  // true once the loading screen has finished
+  fsActive  : false,  // inside a Free Spins round (natural or bought)
+  fsTotal   : 0,      // total won during the current Free Spins round
+  fsPlayed  : 0,      // free spins played in the current round
+  fsPendingSummary: false,
 };
+
+function saveProgress() {
+  writeSave({
+    balance   : state.balance,
+    betIndex  : state.betIndex,
+    sessionWin: state.sessionWin,
+    speedIndex: state.speedIndex,
+    demoMode  : CONFIG.demoMode,
+  });
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // RNG
@@ -443,8 +474,13 @@ function spinReel(colIndex, finalSymbols, stopDelay, finalCoinMults = [], isFree
   rafId = requestAnimationFrame(tick);
 
   // ── Stop & settle ────────────────────────────────────────────────────
+  // Normally fires after stopDelay; quickStop() can trigger it early.
   return new Promise(resolve => {
-    setTimeout(() => {
+    let stopped = false;
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      clearTimeout(stopTimer);
       // Halt the RAF loop
       active = false;
       cancelAnimationFrame(rafId);
@@ -508,9 +544,18 @@ function spinReel(colIndex, finalSymbols, stopDelay, finalCoinMults = [], isFree
         }
       }
       requestAnimationFrame(settle);
-
-    }, stopDelay);
+    };
+    const stopTimer = setTimeout(stop, stopDelay);
+    reelStoppers[colIndex] = stop;
   });
+}
+
+// Tap / Space during a spin stops all remaining reels almost at once
+let reelStoppers = [];
+function quickStop() {
+  if (!state.spinning) return;
+  reelStoppers.forEach((stop, i) => stop && setTimeout(stop, i * 60));
+  reelStoppers = [];
 }
 
 // Puts a symbol into a cell; Bonus Coins also get their credit value label.
@@ -553,6 +598,7 @@ function animateNumber(el, from, to, dur = 600) {
 }
 
 function clearWinEffects() {
+  clearPaylines();
   document.querySelectorAll('.cell.win-glow, .cell.scatter-glow')
     .forEach(c => c.classList.remove('win-glow', 'scatter-glow'));
   state.winCells.clear();
@@ -611,14 +657,28 @@ async function doSpin() {
   const bet    = CONFIG.betLevels[state.betIndex];
 
   if (!isFree && state.balance < bet) {
-    setStatus('⚠️  Not enough coins — lower your bet.');
+    // Step the bet down to the largest one the balance still covers
+    let i = state.betIndex;
+    while (i > 0 && CONFIG.betLevels[i] > state.balance) i--;
+    if (CONFIG.betLevels[i] <= state.balance) {
+      state.betIndex = i;
+      updateBetDisplay();
+      saveProgress();
+      setStatus(`Bet lowered to ${CONFIG.betLevels[i].toLocaleString()} so you can keep playing.`);
+    } else {
+      showRefill();
+    }
     return;
   }
 
   state.spinning = true;
+  reelStoppers = [];
   clearWinEffects();
   setStatus(isFree ? `🌊 Free Spin! (${state.freeSpins} remaining)` : '🎣 Reeling in…');
-  elSpinBtn.disabled = elBetMinus.disabled = elBetPlus.disabled = true;
+  // SPIN stays clickable during the spin — it acts as STOP
+  elBetMinus.disabled = elBetPlus.disabled = true;
+  elSpinBtn.classList.add('is-stop');
+  elSpinBtn.textContent = '■ STOP';
   updateBuyFreeSpinsUI();
 
   if (!isFree) {
@@ -648,6 +708,7 @@ async function doSpin() {
     ps.push(spinReel(col, grid[col], firstStop + col * stagger, state.coinMults[col], isFree));
   }
   await Promise.all(ps);
+  elSpinBtn.classList.remove('is-stop');
 
   // Evaluate
   const mult = isFree ? CONFIG.freeSpins.multiplier : 1;
@@ -656,6 +717,7 @@ async function doSpin() {
 
   state.lastWin  = totalWin;
   state.winLines = winLines;
+  if (isFree) { state.fsTotal += totalWin; state.fsPlayed++; }
 
   // Hold & Spin — base game only (coins aren't in the Free Spins pool anyway)
   const triggerHold = !isFree && countCoins(grid) >= CONFIG.holdSpin.trigger;
@@ -666,6 +728,7 @@ async function doSpin() {
 
   if (totalWin > 0) {
     applyWinEffects(winCells, winLines);
+    showPaylines(winLines);
     const prev = state.balance;
     state.balance += totalWin;
     animateNumber(elBalance, prev, state.balance, 800);
@@ -683,14 +746,16 @@ async function doSpin() {
 
   if (triggerScatter) {
     spawnBubbles();
+    if (!isFree) { state.fsActive = true; state.fsTotal = 0; state.fsPlayed = 0; }
     state.freeSpins += bonusSpins;
     updateFreeSpinsDisplay();
     setStatus(isFree
       ? `🌊 Retriggered! +${bonusSpins} Free Spins! Win: ${totalWin.toLocaleString()}`
       : `🎉 SCATTER! ${bonusSpins} Free Spins unlocked! Win: ${totalWin.toLocaleString()}`);
   } else if (totalWin > 0) {
-    setStatus(`✨ Win: +${totalWin.toLocaleString()}  —  ` +
-      winLines.map(w => `L${w.line}: +${w.amount.toLocaleString()}`).join(' · '));
+    // Short summary — the per-line amounts are shown on the drawn paylines
+    const n = winLines.length;
+    setStatus(`✨ Win +${totalWin.toLocaleString()} · ${n} line${n > 1 ? 's' : ''}`);
   } else if (isFree) {
     setStatus(state.freeSpins > 0 ? `Free spin · no win · ${state.freeSpins} left` : '🏁 Free Spins complete!');
   } else {
@@ -698,12 +763,14 @@ async function doSpin() {
   }
 
   updateSpinButton();
+  if (isFree && state.freeSpins === 0 && state.fsActive) state.fsPendingSummary = true;
 
   if (triggerHold) {
     setStatus(`🪙 ${countCoins(grid)} Bonus Coins! HOLD & SPIN!` +
       (totalWin > 0 ? `  Win: +${totalWin.toLocaleString()}` : ''));
     state.inHoldSpin = true;     // keeps SPIN / bet / buy locked
     state.spinning   = false;
+    elSpinBtn.disabled = true;
     updateBuyFreeSpinsUI();
     setTimeout(() => runHoldSpin(bet), 1300);
     return;
@@ -715,10 +782,23 @@ async function doSpin() {
   elBetPlus.disabled  = state.freeSpins > 0;
   updateBuyFreeSpinsUI();
 
-  // Free Spins auto-play: if more remain, keep going without a manual click.
+  // What happens next (next Free Spin, Free Spins summary, refill offer).
   // If a win overlay is about to show, defer — hideWinOverlay() continues
   // things once the player collects (or it auto-dismisses).
-  if (!willShowOverlay) scheduleAutoFreeSpin();
+  saveProgress();
+  if (!willShowOverlay) continueAfterSpin();
+}
+
+// Single place that decides what follows a finished spin or popup
+function continueAfterSpin() {
+  saveProgress();
+  if (state.fsPendingSummary) {
+    state.fsPendingSummary = false;
+    setTimeout(showFsSummary, 600);
+    return;
+  }
+  if (state.freeSpins > 0) { scheduleAutoFreeSpin(); return; }
+  maybeOfferRefill();
 }
 
 // Auto-advance to the next Free Spin (used for both naturally-triggered and
@@ -872,6 +952,7 @@ async function runHoldSpin(bet) {
   elBetPlus.disabled  = state.freeSpins > 0 || state.betIndex === CONFIG.betLevels.length - 1;
   updateBuyFreeSpinsUI();
 
+  saveProgress();
   // Celebration — closing it also resumes any Free Spins won on the same spin
   showWinOverlay(total, bet, jp ? `${jp.label} JACKPOT!` : 'HOLD & SPIN WIN!');
 }
@@ -884,6 +965,25 @@ function setStatus(msg) { elStatus.textContent = msg; }
 
 // ── Win Celebration Overlay ───────────────────────────────────────────────
 let _winOverlayTimer = null;
+let _winCounting = false, _winSkip = false;
+
+// While the win amount is still counting up, a tap/Space jumps to the final
+// number instead of closing. Returns true if it consumed the input.
+function finishWinCount() {
+  if (!_winCounting) return false;
+  _winSkip = true;
+  return true;
+}
+function winOverlayOpen() {
+  const o = document.getElementById('win-overlay');
+  return !!(o && o.classList.contains('open'));
+}
+// Any popup that should block spinning from Space / board taps
+function popupOpen() {
+  const b = document.body.classList;
+  return winOverlayOpen() || b.contains('paytable-open') || b.contains('buyfs-open') ||
+         b.contains('drawer-open') || b.contains('info-open');
+}
 
 function showWinOverlay(amount, bet, labelOverride = null) {
   const overlay    = document.getElementById('win-overlay');
@@ -933,11 +1033,12 @@ function showWinOverlay(amount, bet, labelOverride = null) {
     particles.appendChild(s);
   }
 
-  // Animate amount counter (counts up over ~2s)
+  // Animate amount counter (counts up over ~2s; a tap finishes it at once)
   const duration = 2000;
   const startTs  = performance.now();
+  _winCounting = true; _winSkip = false;
   function tick(now) {
-    const t = Math.min((now - startTs) / duration, 1);
+    const t = _winSkip ? 1 : Math.min((now - startTs) / duration, 1);
     // Ease-out cubic
     const ease = 1 - Math.pow(1 - t, 3);
     amountEl.textContent = Math.floor(ease * amount).toLocaleString();
@@ -945,6 +1046,7 @@ function showWinOverlay(amount, bet, labelOverride = null) {
       requestAnimationFrame(tick);
     } else {
       amountEl.textContent = amount.toLocaleString();
+      _winCounting = false;
       // Auto-dismiss after 8s if player hasn't pressed COLLECT
       _winOverlayTimer = setTimeout(hideWinOverlay, 8000);
     }
@@ -959,8 +1061,8 @@ function hideWinOverlay() {
   overlay.classList.add('closing');
   setTimeout(() => {
     overlay.classList.remove('open', 'closing', 'tier-big', 'tier-mega', 'tier-massive');
-    // Big win overlay just closed — resume Free Spins auto-play, if any remain
-    scheduleAutoFreeSpin();
+    // Big win overlay just closed — carry on (next Free Spin, summary, …)
+    continueAfterSpin();
   }, 500);
 }
 
@@ -976,6 +1078,7 @@ function resetSession() {
   state.spinCount  = 0;
   state.scriptCount = 0;
   state.coinMults   = [];
+  state.fsActive = false; state.fsTotal = 0; state.fsPlayed = 0; state.fsPendingSummary = false;
   Object.keys(jackpotGrowth).forEach(k => jackpotGrowth[k] = 0);
   renderJackpots();
   state.lastWin    = 0;
@@ -989,7 +1092,9 @@ function resetSession() {
   updateBetDisplay();
   updateFreeSpinsDisplay();
   updateBuyFreeSpinsUI();
+  closeInfoModal('refill-modal');
   setStatus('Welcome to Fishing Fortune Reels · Press SPIN to cast! 🎣');
+  saveProgress();
 }
 
 function updateBetDisplay() {
@@ -1017,6 +1122,142 @@ function updateSpinButton() {
     elSpinBtn.textContent = '⚡ SPIN';
     elSpinBtn.classList.remove('free-spin-mode');
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WINNING PAYLINES — drawn over the reels. All winning lines flash together,
+// then each one is traced in turn with its amount, looping until next spin.
+// ═══════════════════════════════════════════════════════════════════════════
+const LINE_COLORS = ['#ffd84a','#5ef0ff','#ff8ad8','#9dff6a','#ffa94a',
+                     '#b59bff','#ff6a6a','#6affc9','#ffe9a8','#7ab8ff'];
+let _plTimer = null;
+
+function clearPaylines() {
+  if (_plTimer) { clearInterval(_plTimer); _plTimer = null; }
+  const svg = document.getElementById('payline-layer');
+  if (svg) svg.innerHTML = '';
+}
+
+function showPaylines(winLines) {
+  const lines = winLines.filter(w => w.line !== 'SCATTER');
+  const svg   = document.getElementById('payline-layer');
+  const board = document.getElementById('game-board');
+  if (!svg || !board || !lines.length) return;
+
+  const br = board.getBoundingClientRect();
+  svg.setAttribute('viewBox', `0 0 ${br.width} ${br.height}`);
+  const center = (c, r) => {
+    const b = reelCells[c][r].getBoundingClientRect();
+    return [b.left - br.left + b.width / 2, b.top - br.top + b.height / 2];
+  };
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (tag, attrs) => {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  };
+
+  const groups = lines.map(w => {
+    const pl  = PAYLINES[w.line - 1];
+    const pts = pl.map((r, c) => center(c, r));
+    const first = pts[0], last = pts[pts.length - 1];
+    const cellW = reelCells[0][0].getBoundingClientRect().width;
+    // extend a little past the outer reels so the line reads as a full payline
+    const path = [[first[0] - cellW * 0.55, first[1]], ...pts, [last[0] + cellW * 0.55, last[1]]]
+      .map(p => p.map(v => v.toFixed(1)).join(',')).join(' ');
+    const color = LINE_COLORS[(w.line - 1) % LINE_COLORS.length];
+    const g = el('g', { class: 'pl-line' });
+    g.appendChild(el('polyline', { points: path, class: 'pl-glow', stroke: color }));
+    g.appendChild(el('polyline', { points: path, class: 'pl-core', stroke: color }));
+    // dots on the matching cells
+    for (let c = 0; c < w.matchCount; c++) {
+      g.appendChild(el('circle', { cx: pts[c][0], cy: pts[c][1], r: 5, fill: color, class: 'pl-dot' }));
+    }
+    // line number badge at the left end
+    const bx = first[0] - cellW * 0.55, by = first[1];
+    g.appendChild(el('circle', { cx: bx, cy: by, r: 13, fill: '#04163a', stroke: color, 'stroke-width': 2.5 }));
+    const num = el('text', { x: bx, y: by + 4.5, class: 'pl-num' }); num.textContent = w.line; g.appendChild(num);
+    // amount tag on the last matching cell
+    const tag = el('text', { x: pts[w.matchCount - 1][0], y: pts[w.matchCount - 1][1] - cellW * 0.32, class: 'pl-amt' });
+    tag.textContent = '+' + w.amount.toLocaleString();
+    g.appendChild(tag);
+    svg.appendChild(g);
+    return g;
+  });
+
+  // Phase 1: all lines at once; phase 2: one at a time (only if > 1)
+  groups.forEach(g => g.classList.add('on'));
+  groups.forEach(g => g.classList.add('no-amt'));
+  if (groups.length === 1) { groups[0].classList.remove('no-amt'); return; }
+  let i = -1;
+  setTimeout(() => {
+    if (!svg.contains(groups[0])) return;            // already cleared
+    const step = () => {
+      i = (i + 1) % groups.length;
+      groups.forEach((g, k) => { g.classList.toggle('on', k === i); g.classList.toggle('no-amt', k !== i); });
+    };
+    step();
+    _plTimer = setInterval(step, 1100);
+  }, 1000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INFO POPUPS — Free Spins summary + out-of-coins refill
+// ═══════════════════════════════════════════════════════════════════════════
+let _fsSummaryTimer = null;
+
+function openInfoModal(id) {
+  const m = document.getElementById(id);
+  if (!m) return;
+  m.classList.add('open');
+  document.body.classList.add('info-open');
+  const btn = m.querySelector('.info-btn');
+  if (btn) setTimeout(() => btn.focus({ preventScroll: true }), 50);
+}
+function closeInfoModal(id) {
+  const m = document.getElementById(id);
+  if (!m || !m.classList.contains('open')) return false;
+  m.classList.remove('open');
+  if (!document.querySelector('.info-modal.open')) document.body.classList.remove('info-open');
+  return true;
+}
+
+function showFsSummary() {
+  if (winOverlayOpen()) { setTimeout(showFsSummary, 400); return; }
+  document.getElementById('fs-sum-spins').textContent = state.fsPlayed;
+  document.getElementById('fs-sum-mult').textContent  = CONFIG.freeSpins.multiplier + '×';
+  const totalEl = document.getElementById('fs-sum-total');
+  totalEl.textContent = '0';
+  openInfoModal('fs-summary-modal');
+  animateNumber(totalEl, 0, state.fsTotal, 1100);
+  setStatus(`🏁 Free Spins complete · won ${state.fsTotal.toLocaleString()}`);
+  if (_fsSummaryTimer) clearTimeout(_fsSummaryTimer);
+  _fsSummaryTimer = setTimeout(collectFsSummary, 9000);   // auto-close if left alone
+}
+function collectFsSummary() {
+  if (_fsSummaryTimer) { clearTimeout(_fsSummaryTimer); _fsSummaryTimer = null; }
+  if (!closeInfoModal('fs-summary-modal')) return;
+  state.fsActive = false;
+  continueAfterSpin();
+}
+
+function maybeOfferRefill() {
+  if (state.spinning || state.inHoldSpin || state.freeSpins > 0) return;
+  if (state.balance < CONFIG.betLevels[0]) showRefill();
+}
+function showRefill() {
+  document.getElementById('refill-amount').textContent = CONFIG.refillAmount.toLocaleString();
+  openInfoModal('refill-modal');
+}
+function collectRefill() {
+  if (!closeInfoModal('refill-modal')) return;
+  const prev = state.balance;
+  state.balance += CONFIG.refillAmount;
+  animateNumber(elBalance, prev, state.balance, 900);
+  spawnCoins(24);
+  setStatus(`🎁 +${CONFIG.refillAmount.toLocaleString()} free coins — good luck!`);
+  updateBuyFreeSpinsUI();
+  saveProgress();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1071,6 +1312,7 @@ function confirmBuyFreeSpins() {
   animateNumber(elBalance, prev, state.balance, 300);
 
   state.freeSpins += CONFIG.buyFreeSpins.spins;
+  state.fsActive = true; state.fsTotal = 0; state.fsPlayed = 0;
   updateFreeSpinsDisplay();
   setStatus(`🌊 Bought ${CONFIG.buyFreeSpins.spins} Free Spins for ${cost.toLocaleString()}!`);
   closeBuyFreeSpinsModal();
@@ -1136,7 +1378,25 @@ function buildReelGrid() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 function wireEvents() {
-  elSpinBtn.addEventListener('click', doSpin);
+  // SPIN doubles as STOP while the reels are turning
+  const spinOrStop = () => {
+    if (state.spinning) { quickStop(); return; }
+    if (!elSpinBtn.disabled) doSpin();
+  };
+  elSpinBtn.addEventListener('click', spinOrStop);
+
+  // Win overlay: while the amount is counting, a tap finishes the count
+  // (capture phase, so COLLECT doesn't also close it on that first tap)
+  const winOv = document.getElementById('win-overlay');
+  if (winOv) winOv.addEventListener('click', e => {
+    if (finishWinCount()) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
+  // Info popups
+  const fsCollect = document.getElementById('fs-sum-collect');
+  if (fsCollect) fsCollect.addEventListener('click', collectFsSummary);
+  const refillBtn = document.getElementById('refill-collect');
+  if (refillBtn) refillBtn.addEventListener('click', collectRefill);
 
   // Speed toggle button
   const speedBtn       = document.getElementById('speed-toggle-btn');
@@ -1151,31 +1411,33 @@ function wireEvents() {
   if (speedBtn) {
     speedBtn.addEventListener('click', () => {
       state.speedIndex = (state.speedIndex + 1) % SPEED_LEVELS.length;
-      applySpeed();
+      applySpeed(); saveProgress();
     });
   }
   if (mobileSpeedBtn) {
     mobileSpeedBtn.addEventListener('click', () => {
       state.speedIndex = (state.speedIndex + 1) % SPEED_LEVELS.length;
-      applySpeed();
+      applySpeed(); saveProgress();
     });
   }
+  applySpeed();   // reflect a saved speed on load
 
   // Clicking anywhere on the reel board also triggers spin
   const elBoard = document.getElementById('game-board');
   if (elBoard) {
     elBoard.addEventListener('click', () => {
-      if (!elSpinBtn.disabled) doSpin();
+      if (popupOpen()) return;
+      spinOrStop();
     });
     elBoard.style.cursor = 'pointer';
   }
   elBetMinus.addEventListener('click', () => {
     if (state.spinning || state.inHoldSpin) return;
-    if (state.betIndex > 0) { state.betIndex--; updateBetDisplay(); }
+    if (state.betIndex > 0) { state.betIndex--; updateBetDisplay(); saveProgress(); }
   });
   elBetPlus.addEventListener('click', () => {
     if (state.spinning || state.inHoldSpin) return;
-    if (state.betIndex < CONFIG.betLevels.length - 1) { state.betIndex++; updateBetDisplay(); }
+    if (state.betIndex < CONFIG.betLevels.length - 1) { state.betIndex++; updateBetDisplay(); saveProgress(); }
   });
   function openPaytable()  { elPaytableModal.classList.add('open');    document.body.classList.add('paytable-open'); }
   function closePaytable() { elPaytableModal.classList.remove('open'); document.body.classList.remove('paytable-open'); }
@@ -1194,7 +1456,18 @@ function wireEvents() {
   }
   document.addEventListener('keydown', e => {
     if (!state.ready) return;   // let Space/Enter press the loading screen's button
-    if (e.code === 'Space' && !elSpinBtn.disabled) { e.preventDefault(); doSpin(); }
+    if (e.code !== 'Space' && e.code !== 'Enter') return;
+    // Win popup: first press finishes the count-up, the next one collects
+    if (winOverlayOpen()) {
+      e.preventDefault();
+      if (!finishWinCount()) hideWinOverlay();
+      return;
+    }
+    // Any other popup: leave keys to its focused button, never spin behind it
+    if (popupOpen()) return;
+    if (e.code !== 'Space') return;
+    e.preventDefault();
+    spinOrStop();
   });
 
   // Max-bet button
@@ -1204,6 +1477,7 @@ function wireEvents() {
       if (!state.spinning && !state.inHoldSpin && state.freeSpins === 0) {
         state.betIndex = CONFIG.betLevels.length - 1;
         updateBetDisplay();
+        saveProgress();
       }
     });
   }
@@ -1352,6 +1626,7 @@ function runLoader() {
     document.body.classList.remove('is-loading');
     state.ready = true;
     setTimeout(() => loader.remove(), 650);
+    setTimeout(maybeOfferRefill, 700);   // e.g. came back with an empty saved balance
   }
 
   load(collectAssetUrls());
@@ -1381,12 +1656,18 @@ document.addEventListener('DOMContentLoaded', () => {
   elBuyFsConfirm    = document.getElementById('buy-fs-confirm');
   elBuyFsCancel     = document.getElementById('buy-fs-cancel');
 
+  // Restore saved progress (validated — bad or missing values keep defaults)
+  if (Number.isFinite(SAVED.balance) && SAVED.balance >= 0) state.balance = Math.floor(SAVED.balance);
+  if (Number.isInteger(SAVED.betIndex) && SAVED.betIndex >= 0 && SAVED.betIndex < CONFIG.betLevels.length) state.betIndex = SAVED.betIndex;
+  if (Number.isFinite(SAVED.sessionWin) && SAVED.sessionWin >= 0) state.sessionWin = Math.floor(SAVED.sessionWin);
+  if (Number.isInteger(SAVED.speedIndex) && SAVED.speedIndex >= 0 && SAVED.speedIndex < SPEED_LEVELS.length) state.speedIndex = SAVED.speedIndex;
+
   buildReelGrid();
   buildPaytable();
   startJackpotTickers();
 
   elBalance.textContent = state.balance.toLocaleString();
-  elLastWin.textContent = '0';
+  elLastWin.textContent = state.sessionWin.toLocaleString();
   updateBetDisplay();
   updateFreeSpinsDisplay();
   updateBuyFreeSpinsUI();

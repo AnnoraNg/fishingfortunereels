@@ -64,7 +64,7 @@ html, body {
 #ocean-bg {
   position: fixed; inset: 0; z-index: 0;
   /* Uses Codex-generated background when present; CSS gradient is the fallback */
-  background-image: url('assets/background_ocean.png');
+  background-image: url('assets/background_ocean.webp');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -317,7 +317,7 @@ html, body {
   gap: 2px;
   border-radius: 16px;
   border: none;
-  background-image: url('assets/buy_fs_button_bg.png');
+  background-image: url('assets/buy_fs_button_bg.webp');
   background-size: cover; background-position: center;
   box-shadow: 0 6px 20px rgba(0,0,0,0.55);
   cursor: pointer;
@@ -357,7 +357,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 #buy-fs-modal.open { display: flex; }
 #buy-fs-panel {
   width: 100%; max-width: 360px;
-  background-image: url('assets/buy_fs_popup_bg.png');
+  background-image: url('assets/buy_fs_popup_bg.webp');
   background-size: 100% 100%;
   border: none;
   border-radius: 18px;
@@ -749,7 +749,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
 
 /* Free-spin mode — cyan SPIN button */
 #spin-btn.free-spin-mode {
-  background-image: url('assets/free_spin_button_normal.png') !important;
+  background-image: url('assets/free_spin_button_normal.webp') !important;
   background-size: cover !important; background-position: center !important;
   border-color: var(--neon-cyan);
   color: #001825;
@@ -760,7 +760,7 @@ body.buyfs-open #mobile-menu-btn { display: none; }
     inset 0 1px 0 rgba(200,250,255,0.5);
 }
 #spin-btn.free-spin-mode:hover:not(:disabled) {
-  background-image: url('assets/free_spin_button_hover.png') !important;
+  background-image: url('assets/free_spin_button_hover.webp') !important;
   background-size: cover !important; background-position: center !important;
   box-shadow: 0 0 42px rgba(0,230,255,0.82), 0 6px 22px rgba(0,0,0,0.38);
 }
@@ -1101,7 +1101,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ── BIG WIN tier — koi fish banner ── */
 #win-overlay.tier-big #win-overlay-panel {
-  background: url('assets/banner_big_win.png') center / cover no-repeat;
+  background: url('assets/banner_big_win.webp') center / cover no-repeat;
   box-shadow:
     0 0 0 2px rgba(255,190,0,0.6),
     0 0 0 4px rgba(180,120,0,0.4),
@@ -1124,7 +1124,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ── MEGA WIN tier — clam/pearl banner ── */
 #win-overlay.tier-mega #win-overlay-panel {
-  background: url('assets/banner_mega_win.png') center / cover no-repeat;
+  background: url('assets/banner_mega_win.webp') center / cover no-repeat;
   box-shadow:
     0 0 0 2px rgba(0,200,255,0.7),
     0 0 0 4px rgba(0,120,200,0.4),
@@ -1147,7 +1147,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ── MASSIVE WIN tier — marlin/swordfish banner ── */
 #win-overlay.tier-massive #win-overlay-panel {
-  background: url('assets/banner_massive_win.png') center / cover no-repeat;
+  background: url('assets/banner_massive_win.webp') center / cover no-repeat;
   box-shadow:
     0 0 0 2px rgba(255,80,0,0.8),
     0 0 0 4px rgba(200,0,0,0.5),
@@ -1240,7 +1240,7 @@ body.paytable-open #demo-toggle-btn { display: none; }
 
 /* ─── Bottom bar — image background with dark text ─────────────────── */
 #bottom-bar {
-  background-image: url('assets/bottom_bar_bg.png');
+  background-image: url('assets/bottom_bar_bg.webp');
   background-size: cover; background-position: center;
 }
 /* Labels and values need to be dark to read on the lighter bar */
@@ -1814,7 +1814,7 @@ body.hold-spin-active #hs-panel { display: block; animation: hsIn 0.4s ease-out;
 /* Title steps aside for the Hold & Spin ribbon (keeps layout from jumping) */
 body.hold-spin-active #game-title { visibility: hidden; }
 
-/* ── Hold & Spin ribbon art (assets/hold_spin_banner_900.png) ──────────
+/* ── Hold & Spin ribbon art (assets/hold_spin_banner_900.webp) ──────────
    The gold ribbon carries the title; the stats sit in a slim blue strip
    that overlaps the top edge of the reel frame. */
 #hs-panel {
@@ -1827,7 +1827,7 @@ body.hold-spin-active #game-title { visibility: hidden; }
   position: relative;
   width: 100%;
   aspect-ratio: 1416 / 380;
-  background: url('assets/hold_spin_banner_900.png') center / contain no-repeat;
+  background: url('assets/hold_spin_banner_900.webp') center / contain no-repeat;
   filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
 }
 #hs-title span {
@@ -1884,7 +1884,7 @@ body.hold-spin-active #game-title { visibility: hidden; }
            max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   background:
     linear-gradient(180deg, rgba(4,20,60,0.10) 0%, rgba(4,20,60,0) 40%, rgba(2,14,40,0.55) 100%),
-    url('assets/background_ocean.png') center / cover no-repeat,
+    url('assets/background_ocean.webp') center / cover no-repeat,
     linear-gradient(180deg, #5baae0 0%, #1d6fb8 55%, #0a3a78 100%);
   transition: opacity 0.6s ease, visibility 0.6s;
 }
@@ -2211,3 +2211,105 @@ body {
 /* The loading screen and open dialogs still lock the page behind them */
 html:has(body.is-loading), html:has(body.paytable-open), html:has(body.buyfs-open),
 body.is-loading, body.paytable-open, body.buyfs-open { overflow: hidden; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   WINNING PAYLINES (SVG over the reels)
+   ═══════════════════════════════════════════════════════════════════ */
+#payline-layer {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 6; pointer-events: none; overflow: visible;
+}
+#payline-layer .pl-line { opacity: 0; transition: opacity 0.25s ease; }
+#payline-layer .pl-line.on { opacity: 1; }
+#payline-layer polyline { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+#payline-layer .pl-glow { stroke-width: 12; opacity: 0.35; filter: blur(3px); }
+#payline-layer .pl-core { stroke-width: 4.5; filter: drop-shadow(0 0 4px rgba(0,0,0,0.6)); }
+#payline-layer .pl-dot  { stroke: #fff; stroke-width: 2; }
+#payline-layer .pl-num  { font-family: var(--font-display); font-weight: 900; font-size: 13px; fill: #fff; text-anchor: middle; }
+#payline-layer .pl-amt  {
+  font-family: var(--font-body); font-weight: 700; font-size: 18px; fill: #fff6c8; text-anchor: middle;
+  paint-order: stroke fill; stroke: #3a2200; stroke-width: 4px; stroke-linejoin: round;
+}
+#payline-layer .pl-line.no-amt .pl-amt { opacity: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   STOP state of the SPIN button (tap again to stop the reels)
+   ═══════════════════════════════════════════════════════════════════ */
+#spin-btn.is-stop { filter: saturate(0.85) brightness(1.04); letter-spacing: 0.12em; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DEMO badge + toggle state
+   ═══════════════════════════════════════════════════════════════════ */
+#demo-badge {
+  display: none;
+  position: absolute; z-index: 7; left: 50%; bottom: 0;
+  transform: translate(-50%, 60%);
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ff9a3c, #e0560f);
+  border: 1.5px solid #ffe2b0;
+  color: #fff; white-space: nowrap;
+  font-family: var(--font-body); font-weight: 700; font-size: 0.66rem; letter-spacing: 0.12em;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+body.demo-on #demo-badge { display: block; }
+body.hold-spin-active #demo-badge { display: none; }
+#demo-toggle-btn.is-demo { background: linear-gradient(180deg, #ff9a3c, #d9540f); color: #fff; border-color: #ffe2b0; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   INFO POPUPS — Free Spins summary, out-of-coins refill
+   (same parchment art + gold button language as the Buy Free Spins popup)
+   ═══════════════════════════════════════════════════════════════════ */
+.info-modal {
+  display: none; position: fixed; inset: 0; z-index: 320;
+  background: rgba(0,15,35,0.84);
+  align-items: center; justify-content: center;
+  padding: 16px; backdrop-filter: blur(5px);
+}
+.info-modal.open { display: flex; }
+.info-panel {
+  width: 100%; max-width: 360px;
+  background: url('assets/buy_fs_popup_bg.webp') center / 100% 100% no-repeat;
+  border-radius: 18px;
+  padding: 56px 44px 42px;
+  display: flex; flex-direction: column; align-items: stretch; gap: 16px;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  animation: panelPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.info-title {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: 1.35rem; letter-spacing: 0.08em; color: #7a4a00; line-height: 1.15;
+}
+.info-desc { font-family: var(--font-body); font-size: 0.9rem; line-height: 1.5; color: #1a3a5c; margin: 0; }
+.info-desc b { color: #7a4a00; }
+.info-amount {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: linear-gradient(180deg, #fffef6 0%, #fff2ce 100%);
+  border: 2px solid var(--gold); border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(120,80,0,0.18), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+.info-amount-label { font-family: var(--font-body); font-weight: 700; font-size: 0.7rem; letter-spacing: 0.14em; color: #a07830; }
+.info-amount-value { font-family: var(--font-display); font-weight: 900; font-size: 1.7rem; color: #7a4a00; font-variant-numeric: tabular-nums; }
+.info-btn {
+  position: relative; overflow: hidden;
+  padding: 13px 0; border-radius: 12px; cursor: pointer;
+  font-family: var(--font-display); font-weight: 800; font-size: 0.9rem; letter-spacing: 0.12em;
+  background: linear-gradient(180deg, var(--gold-bright) 0%, var(--gold) 35%, var(--gold-mid) 68%, var(--gold-dk) 100%);
+  border: 2px solid var(--gold-bright); color: #1a0800;
+  box-shadow: 0 0 18px rgba(255,200,0,0.5), 0 4px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+.info-btn:hover { transform: translateY(-1px); }
+.info-btn:active { transform: scale(0.97); }
+.info-btn:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+/* Hide the floating corner buttons and lock scrolling behind info popups */
+body.info-open #profile-widget, body.info-open #frame-toggle-btn,
+body.info-open #speed-toggle-btn, body.info-open #demo-toggle-btn,
+body.info-open #mobile-menu-btn { display: none; }
+html:has(body.info-open), body.info-open { overflow: hidden; }
+/* Scale payline labels with the reel cell size (phones get smaller tags) */
+#payline-layer .pl-amt { font-size: calc(var(--cell-size) * 0.17); }
+#payline-layer .pl-num { font-size: calc(var(--cell-size) * 0.12); }
