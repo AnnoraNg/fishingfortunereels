@@ -689,10 +689,9 @@ async function doSpin() {
   } else {
     state.freeSpins--;
     updateFreeSpinsDisplay();
-    // The FREE SPINS banner already shows how many are left, so the status
-    // bar shows progress instead (two "remaining" counts read as off-by-one)
-    const nth = state.fsPlayed + 1, total = state.fsPlayed + 1 + state.freeSpins;
-    setStatus(`🌊 Free Spin ${nth} of ${total} · wins pay ${CONFIG.freeSpins.multiplier}×`);
+    // The FREE SPINS banner is the one and only counter — the status bar
+    // carries no number during the feature, so nothing counts down twice
+    setStatus(`🌊 Free Spin · all wins pay ${CONFIG.freeSpins.multiplier}×`);
   }
 
   // Outcome — use boosted grid for early spins
@@ -775,6 +774,7 @@ async function doSpin() {
       (totalWin > 0 ? `  Win: +${totalWin.toLocaleString()}` : ''));
     state.inHoldSpin = true;     // keeps SPIN / bet / buy locked
     state.spinning   = false;
+    updateSpinButton();
     elSpinBtn.disabled = true;
     updateBuyFreeSpinsUI();
     setTimeout(() => runHoldSpin(bet), 1300);
@@ -782,6 +782,7 @@ async function doSpin() {
   }
 
   state.spinning = false;
+  updateSpinButton();
   elSpinBtn.disabled  = false;
   elBetMinus.disabled = state.freeSpins > 0;
   elBetPlus.disabled  = state.freeSpins > 0;
@@ -1121,6 +1122,7 @@ function updateFreeSpinsDisplay() {
 }
 
 function updateSpinButton() {
+  if (state.spinning) { elSpinBtn.textContent = '■ STOP'; return; }   // tap again to stop the reels
   if (state.freeSpins > 0) {
     elSpinBtn.textContent = '🌊 FREE SPIN';
     elSpinBtn.classList.add('free-spin-mode');
